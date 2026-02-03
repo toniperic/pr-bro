@@ -7,3 +7,4 @@ pub mod output;
 pub mod scoring;
 pub mod snooze;
 pub mod tui;
+pub mod version_check;
