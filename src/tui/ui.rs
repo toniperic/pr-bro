@@ -1,5 +1,6 @@
 use crate::tui::app::{App, InputMode, View};
 use crate::tui::theme;
+use crate::version_check::VersionStatus;
 use chrono::{Datelike, Local};
 use ratatui::prelude::*;
 use ratatui::widgets::{
@@ -17,19 +18,37 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
         return;
     }
 
-    // Layout: Title(1) + Tabs(1) + Table(fill) + Status(1)
-    let chunks = Layout::vertical([
-        Constraint::Length(1), // Title bar
-        Constraint::Length(1), // Tab bar
-        Constraint::Fill(1),   // PR table
-        Constraint::Length(1), // Status bar
-    ])
-    .split(area);
+    // Layout: conditionally include banner row
+    if app.has_update_banner() {
+        let chunks = Layout::vertical([
+            Constraint::Length(1), // Title bar
+            Constraint::Length(1), // Update banner
+            Constraint::Length(1), // Tab bar
+            Constraint::Fill(1),   // PR table
+            Constraint::Length(1), // Status bar
+        ])
+        .split(area);
 
-    render_title(frame, chunks[0], app);
-    render_tabs(frame, chunks[1], app);
-    render_table(frame, chunks[2], app);
-    render_status_bar(frame, chunks[3], app);
+        render_title(frame, chunks[0], app);
+        render_update_banner(frame, chunks[1], app);
+        render_tabs(frame, chunks[2], app);
+        render_table(frame, chunks[3], app);
+        render_status_bar(frame, chunks[4], app);
+    } else {
+        // Layout: Title(1) + Tabs(1) + Table(fill) + Status(1)
+        let chunks = Layout::vertical([
+            Constraint::Length(1), // Title bar
+            Constraint::Length(1), // Tab bar
+            Constraint::Fill(1),   // PR table
+            Constraint::Length(1), // Status bar
+        ])
+        .split(area);
+
+        render_title(frame, chunks[0], app);
+        render_tabs(frame, chunks[1], app);
+        render_table(frame, chunks[2], app);
+        render_status_bar(frame, chunks[3], app);
+    }
 
     // Render overlays based on input mode
     match app.input_mode {
@@ -69,6 +88,24 @@ fn render_title(frame: &mut Frame, area: Rect, app: &App) {
 
     let title = Line::from(spans);
     frame.render_widget(Paragraph::new(title), area);
+}
+
+fn render_update_banner(frame: &mut Frame, area: Rect, app: &App) {
+    if let VersionStatus::UpdateAvailable { current, latest } = &app.version_status {
+        // Build banner text with styling
+        let banner_text = Line::from(vec![
+            Span::styled(
+                format!("  Update available: v{} -> v{}  ", current, latest),
+                Style::default().fg(theme::BANNER_FG),
+            ),
+            Span::raw("["),
+            Span::styled("x", Style::default().fg(theme::BANNER_KEY).bold()),
+            Span::styled(" to dismiss]", Style::default().fg(theme::BANNER_FG)),
+        ]);
+
+        let banner = Paragraph::new(banner_text).style(Style::default().bg(theme::BANNER_BG));
+        frame.render_widget(banner, area);
+    }
 }
 
 fn render_tabs(frame: &mut Frame, area: Rect, app: &App) {
