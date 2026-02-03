@@ -67,3 +67,8 @@ pub const POPUP_BG: Color = Color::Indexed(234); // Dark background for popup co
 // Scrollbar colors
 pub const SCROLLBAR_THUMB: Color = Color::Indexed(244); // Medium gray for scrollbar thumb
 pub const SCROLLBAR_TRACK: Color = Color::Indexed(236); // Dark gray for scrollbar track
+
+// Update banner colors
+pub const BANNER_BG: Color = Color::Rgb(50, 50, 120); // Dark blue-purple accent
+pub const BANNER_FG: Color = Color::White;
+pub const BANNER_KEY: Color = Color::Yellow; // Highlight for dismiss key hint

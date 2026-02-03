@@ -3,6 +3,7 @@ use crate::github::cache::{CacheConfig, DiskCache};
 use crate::github::types::PullRequest;
 use crate::scoring::ScoreResult;
 use crate::snooze::SnoozeState;
+use crate::version_check::VersionStatus;
 use chrono::{DateTime, Utc};
 use std::collections::VecDeque;
 use std::path::PathBuf;
@@ -66,6 +67,8 @@ pub struct App {
     pub spinner_frame: usize,
     pub rate_limit_remaining: Option<u64>,
     pub auth_username: Option<String>,
+    pub version_status: VersionStatus,
+    pub no_version_check: bool,
 }
 
 impl App {
@@ -80,6 +83,7 @@ impl App {
         cache_handle: Option<Arc<DiskCache>>,
         verbose: bool,
         auth_username: Option<String>,
+        no_version_check: bool,
     ) -> Self {
         let mut table_state = ratatui::widgets::TableState::default();
         if !active_prs.is_empty() {
@@ -109,11 +113,14 @@ impl App {
             spinner_frame: 0,
             rate_limit_remaining: None,
             auth_username,
+            version_status: VersionStatus::Unknown,
+            no_version_check,
         }
     }
 
     /// Create a new App with empty PR lists in loading state
     /// Used for launching TUI before data arrives
+    #[allow(clippy::too_many_arguments)]
     pub fn new_loading(
         snooze_state: SnoozeState,
         snooze_path: PathBuf,
@@ -122,6 +129,7 @@ impl App {
         cache_handle: Option<Arc<DiskCache>>,
         verbose: bool,
         auth_username: Option<String>,
+        no_version_check: bool,
     ) -> Self {
         Self {
             active_prs: Vec::new(),
@@ -146,6 +154,8 @@ impl App {
             spinner_frame: 0,
             rate_limit_remaining: None,
             auth_username,
+            version_status: VersionStatus::Unknown,
+            no_version_check,
         }
     }
 
@@ -566,5 +576,24 @@ impl App {
     /// Advance the loading spinner animation frame
     pub fn advance_spinner(&mut self) {
         self.spinner_frame = self.spinner_frame.wrapping_add(1);
+    }
+
+    /// Set the version check status
+    pub fn set_version_status(&mut self, status: VersionStatus) {
+        self.version_status = status;
+    }
+
+    /// Dismiss the update banner and persist the dismissal
+    pub fn dismiss_update_banner(&mut self) {
+        if let VersionStatus::UpdateAvailable { latest, .. } = &self.version_status {
+            crate::version_check::dismiss_version(latest);
+            self.version_status = VersionStatus::UpToDate;
+            self.show_flash("Update notice dismissed".to_string());
+        }
+    }
+
+    /// Check if the update banner should be shown
+    pub fn has_update_banner(&self) -> bool {
+        matches!(self.version_status, VersionStatus::UpdateAvailable { .. })
     }
 }
