@@ -1,100 +1,118 @@
 # pr-bro
 
-GitHub PR review prioritization CLI/TUI
+[![CI](https://img.shields.io/github/actions/workflow/status/toniperic/pr-bro/ci.yml?branch=master)](https://github.com/toniperic/pr-bro/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/toniperic/pr-bro)](https://github.com/toniperic/pr-bro/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Know which PR to review next.** pr-bro helps developers prioritize pull request reviews based on weighted scoring across multiple GitHub queries. Features an interactive TUI with keyboard navigation, smart caching, and flexible configuration.
+Know which PR to review next. pr-bro ranks pull requests by weighted scoring across your GitHub queries, so you always start with the most important review.
 
-## Features
+## Requirements
 
-- Weighted scoring based on age, approvals, PR size, labels, and review history
-- Interactive TUI with keyboard navigation and real-time updates
-- Multiple query support with per-query scoring overrides
-- Snooze PRs (timed or indefinite) to hide them temporarily
-- Score breakdown detail view (press `d` to see how a PR's score was calculated)
-- ETag-based HTTP caching for rate limit conservation
-- Token authentication via `PR_BRO_GH_TOKEN` environment variable
+- **GitHub Personal Access Token**: `repo` scope for private repos, `public_repo` for public only
+- **Platforms**: macOS (Intel + Apple Silicon), Linux (x64)
 
 ## Installation
 
-### From Source
+### Homebrew (macOS)
 
-Requires Rust toolchain (1.70+).
+pr-bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope to install.
 
 ```bash
+export HOMEBREW_GITHUB_API_TOKEN=ghp_your_token_here
+brew tap toniperic/tap
+brew install pr-bro
+```
+
+Create a token at https://github.com/settings/tokens (requires `repo` scope).
+
+To upgrade:
+
+```bash
+brew upgrade pr-bro
+```
+
+### From Source
+
+Clone and build with Cargo:
+
+```bash
+git clone git@github.com:toniperic/pr-bro.git
+cd pr-bro
 cargo install --path .
 ```
 
-### Prerequisites
+Requires Rust toolchain. Install from [rustup.rs](https://rustup.rs).
 
-- **Rust**: Install from [rustup.rs](https://rustup.rs)
+### Binary Download
 
-## Quick Start
+Download pre-built binaries from the [GitHub Releases](https://github.com/toniperic/pr-bro/releases) page.
 
-Set `PR_BRO_GH_TOKEN` to your GitHub Personal Access Token, then run pr-bro:
+Available archives:
+- macOS Intel: `pr-bro-<version>-x86_64-apple-darwin.tar.gz`
+- macOS Apple Silicon: `pr-bro-<version>-aarch64-apple-darwin.tar.gz`
+- Linux: `pr-bro-<version>-x86_64-unknown-linux-gnu.tar.gz`
+
+Extract and move to your PATH:
 
 ```bash
-PR_BRO_GH_TOKEN="ghp_your_token_here" pr-bro
+tar -xzf pr-bro-<version>-<platform>.tar.gz
+mv pr-bro /usr/local/bin/
 ```
 
-### Minimal Configuration
+## Quick Usage
 
-Create `~/.config/pr-bro/config.yaml`:
+Set your GitHub token and run:
+
+```bash
+export PR_BRO_GH_TOKEN=ghp_your_token_here
+pr-bro
+```
+
+Create `~/.config/pr-bro/config.yaml` with at least one query:
 
 ```yaml
 queries:
   - name: my-reviews
     query: "is:pr review-requested:@me"
 ```
+
+Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keyboard shortcuts.
+
+## Features
+
+**Weighted scoring** calculates a single priority number for each PR based on age, approval count, size, labels, and whether you've reviewed it before. Older PRs score higher. Small PRs score higher than large ones. Labels like "urgent" can boost scores.
+
+**Interactive TUI** shows all PRs sorted by score. Navigate with arrow keys or vim bindings. Press `d` to see the score breakdown for any PR. Press `r` to refresh.
+
+**Multiple queries** let you track different PR sets. Each query can override global scoring rules. First-match-wins when a PR appears in multiple queries.
+
+**Snooze PRs** to hide them temporarily. Press `s` to snooze for a custom duration or indefinitely. Snoozed PRs live in a separate tab and don't clutter your main list.
+
+**Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `d` on any PR to open the detail view.
+
+**ETag-based HTTP caching** reduces GitHub API calls. Auto-refresh only fetches if data changed on the server. Manual refresh bypasses in-memory cache.
+
+**Version update notifications** appear as a banner when a new release is available. Dismiss with `x` or disable with `--no-version-check`.
 
 ## Configuration
 
 Configuration file location: `~/.config/pr-bro/config.yaml`
 
-At minimum, define one or more queries. Scoring is optional and customizable:
+Minimal example with one query:
 
 ```yaml
-scoring:
-  base_score: 100
-  age: "+1 per 1h"
-  size:
-    buckets:
-      - range: "<100"
-        effect: "x5"
-      - range: "100-500"
-        effect: "x1"
-      - range: ">500"
-        effect: "x0.5"
-
 queries:
   - name: my-reviews
     query: "is:pr review-requested:@me"
 ```
 
-Queries can include their own `scoring` block to override specific fields from the global config.
+For full scoring options, per-query overrides, effect syntax, and validation details, see [Configuration Reference](docs/configuration.md).
 
-For the full configuration reference including all scoring factors, per-query overrides, effect syntax, and validation details, see [Configuration Reference](docs/configuration.md).
+For cache location and behavior, see [Caching](docs/caching.md).
 
-Run `pr-bro --help` to see all available commands and flags.
+## Contributing
 
-In the TUI, press `?` to see all keyboard shortcuts.
-
-## Authentication
-
-Set the `PR_BRO_GH_TOKEN` environment variable with a GitHub Personal Access Token.
-
-**Required scopes:**
-- `repo` (for private repositories)
-- `public_repo` (for public repositories only)
-
-Create a token at: https://github.com/settings/tokens
-
-If the environment variable is not set, pr-bro will prompt for a token interactively (valid for the current session only).
-
-## Caching
-
-pr-bro caches GitHub API responses using ETags to conserve rate limits. Use `--no-cache` to skip caching or `--clear-cache` to remove cached data.
-
-For details on cache location and behavior, see [Caching](docs/caching.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and commit message format.
 
 ## License
 
