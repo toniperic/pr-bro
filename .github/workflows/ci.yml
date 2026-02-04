@@ -13,8 +13,29 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - '.github/workflows/ci.yml'
+              - 'build.rs'
+
   fmt:
     name: Format Check
+    needs: [changes]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.code == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +46,8 @@ jobs:
 
   clippy:
     name: Clippy Lint
+    needs: [changes]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.code == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +59,8 @@ jobs:
 
   test:
     name: Test Suite
+    needs: [changes]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.code == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +70,8 @@ jobs:
 
   build:
     name: Build Release
+    needs: [changes]
+    if: always() && (github.event_name == 'push' || needs.changes.outputs.code == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
