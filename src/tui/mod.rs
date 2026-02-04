@@ -252,7 +252,7 @@ fn handle_key_event(app: &mut App, key: KeyEvent) {
                 KeyCode::Char('?') => app.show_help(),
 
                 // Score breakdown
-                KeyCode::Char('d') => app.show_score_breakdown(),
+                KeyCode::Char('b') => app.show_score_breakdown(),
 
                 // Dismiss update banner
                 KeyCode::Char('x') => {
@@ -287,7 +287,7 @@ fn handle_key_event(app: &mut App, key: KeyEvent) {
             }
         }
         app::InputMode::ScoreBreakdown => match key.code {
-            KeyCode::Esc | KeyCode::Char('d') => app.dismiss_score_breakdown(),
+            KeyCode::Esc | KeyCode::Char('b') => app.dismiss_score_breakdown(),
             KeyCode::Char('j') | KeyCode::Down => app.next_row(),
             KeyCode::Char('k') | KeyCode::Up => app.previous_row(),
             _ => {}

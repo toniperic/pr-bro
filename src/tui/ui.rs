@@ -572,7 +572,7 @@ fn render_help_popup(frame: &mut Frame) {
             Span::raw("Open PR in browser"),
         ]),
         Line::from(vec![
-            Span::styled("d             ", Style::default().fg(Color::Cyan).bold()),
+            Span::styled("b             ", Style::default().fg(Color::Cyan).bold()),
             Span::raw("Score breakdown"),
         ]),
         Line::from(vec![
