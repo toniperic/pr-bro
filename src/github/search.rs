@@ -23,7 +23,12 @@ pub async fn search_prs(client: &Octocrab, query: &str) -> Result<Vec<PullReques
 
     loop {
         attempt += 1;
-        match client.search().issues_and_pull_requests(&query).send().await {
+        match client
+            .search()
+            .issues_and_pull_requests(&query)
+            .send()
+            .await
+        {
             Ok(results) => {
                 let prs: Vec<PullRequest> = results
                     .items

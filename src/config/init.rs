@@ -66,7 +66,9 @@ fn validate_approvals_str(s: &str) -> Result<(), String> {
     } else {
         s.to_string()
     };
-    Effect::parse(&parseable_str).map(|_| ()).map_err(|e| e.to_string())
+    Effect::parse(&parseable_str)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
 
 /// Run the interactive init wizard to create a config file.
@@ -113,7 +115,9 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
         // Approvals factor
         println!();
-        typewriter("The approvals factor adjusts score based on how many approvals a PR already has.");
+        typewriter(
+            "The approvals factor adjusts score based on how many approvals a PR already has.",
+        );
         typewriter("Available formats:");
         typewriter("  +N per 1  -- adds N points per approval (e.g., '+10 per 1')");
         typewriter("  xN per 1  -- multiplies score by N per approval (e.g., 'x0.8 per 1' to deprioritize approved PRs)");
@@ -129,14 +133,18 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
         // Size buckets
         println!();
-        typewriter("Size buckets let you boost or penalize PRs based on how many lines were changed.");
+        typewriter(
+            "Size buckets let you boost or penalize PRs based on how many lines were changed.",
+        );
         typewriter("For example, if you prefer reviewing smaller PRs first, you might set:");
         typewriter("  <100 lines  -> x5    (boosted -- review these first)");
         typewriter("  100-500     -> x1    (neutral)");
         typewriter("  >500 lines  -> x0.25 (penalized -- these drop to the bottom)");
         typewriter("Stick with the defaults if you're unsure -- you can always tweak them later in the config file.");
-        let use_default_size =
-            prompt_yes_no("Size buckets - use defaults? (<100: x5, 100-500: x1, >500: x0.5)", true)?;
+        let use_default_size = prompt_yes_no(
+            "Size buckets - use defaults? (<100: x5, 100-500: x1, >500: x0.5)",
+            true,
+        )?;
         let size = if use_default_size {
             defaults.size.clone()
         } else {
@@ -204,7 +212,9 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         // Labels
         println!();
         typewriter("Labels let you boost or penalize PRs based on GitHub labels.");
-        typewriter("Examples: 'high priority' -> '+50', 'low priority' -> 'x0.5', 'release' -> '+100'.");
+        typewriter(
+            "Examples: 'high priority' -> '+50', 'low priority' -> 'x0.5', 'release' -> '+100'.",
+        );
         let mut label_effects: Vec<LabelEffect> = Vec::new();
         let mut add_label = prompt_yes_no("Add a label rule?", false)?;
         while add_label {
@@ -321,20 +331,12 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
     // Create parent directories
     if let Some(parent) = config_path.parent() {
-        std::fs::create_dir_all(parent).with_context(|| {
-            format!(
-                "Failed to create directory {}",
-                parent.display()
-            )
-        })?;
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("Failed to create directory {}", parent.display()))?;
     }
 
-    std::fs::write(&config_path, &yaml).with_context(|| {
-        format!(
-            "Failed to write config to {}",
-            config_path.display()
-        )
-    })?;
+    std::fs::write(&config_path, &yaml)
+        .with_context(|| format!("Failed to write config to {}", config_path.display()))?;
 
     println!();
     println!("Config written to {}", config_path.display());
