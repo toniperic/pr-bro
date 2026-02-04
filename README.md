@@ -1,7 +1,5 @@
 # PR Bro
 
-[![CI](https://img.shields.io/github/actions/workflow/status/toniperic/pr-bro/ci.yml?branch=master)](https://github.com/toniperic/pr-bro/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/toniperic/pr-bro)](https://github.com/toniperic/pr-bro/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Know which PR to review next. PR Bro ranks pull requests by weighted scoring across your GitHub queries, so you always start with the most important review.
