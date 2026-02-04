@@ -224,12 +224,46 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
             }
         };
 
+        // Labels
+        println!();
+        typewriter("Labels let you boost or penalize PRs based on GitHub labels.");
+        typewriter("Examples: 'high priority' -> '+50', 'low priority' -> 'x0.5', 'release' -> '+100'.");
+        let mut label_effects: Vec<LabelEffect> = Vec::new();
+        let mut add_label = prompt_yes_no("Add a label rule?", false)?;
+        while add_label {
+            let name = loop {
+                let n = prompt("  Label name: ")?;
+                if !n.trim().is_empty() {
+                    break n;
+                }
+                println!("  Label name is required.");
+            };
+            let effect = loop {
+                let e = prompt("  Score effect (e.g., '+50', 'x0.5', 'x2'): ")?;
+                if e.is_empty() {
+                    println!("  Effect is required.");
+                    continue;
+                }
+                match Effect::parse(&e) {
+                    Ok(_) => break e,
+                    Err(err) => println!("  Invalid effect: {}. Try again.", err),
+                }
+            };
+            label_effects.push(LabelEffect { name, effect });
+            add_label = prompt_yes_no("  Add another label rule?", false)?;
+        }
+        let labels = if label_effects.is_empty() {
+            None
+        } else {
+            Some(label_effects)
+        };
+
         ScoringConfig {
             base_score: Some(base_score),
             age: Some(age),
             approvals: Some(approvals),
             size,
-            labels: None,
+            labels,
             previously_reviewed,
         }
     } else {
@@ -303,6 +337,7 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
     println!();
     println!("Config written to {}", config_path.display());
+    typewriter("Each scoring parameter you configured can be overridden per query. See the docs for details.");
     println!("Run `pr-bro` to get started.");
 
     Ok(())
