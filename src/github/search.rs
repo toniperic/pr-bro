@@ -11,12 +11,19 @@ use crate::github::types::PullRequest;
 /// Rate limit and permission errors also fail immediately.
 /// Transient/network errors are retried up to 3 times with exponential backoff.
 pub async fn search_prs(client: &Octocrab, query: &str) -> Result<Vec<PullRequest>> {
+    // Ensure the query only returns PRs, not issues
+    let query = if query.contains("is:pr") {
+        query.to_string()
+    } else {
+        format!("{} is:pr", query)
+    };
+
     let max_retries = 3;
     let mut attempt = 0;
 
     loop {
         attempt += 1;
-        match client.search().issues_and_pull_requests(query).send().await {
+        match client.search().issues_and_pull_requests(&query).send().await {
             Ok(results) => {
                 let prs: Vec<PullRequest> = results
                     .items
