@@ -8,14 +8,18 @@ Know which PR to review next. PR Bro ranks pull requests by weighted scoring acr
 
 ## Requirements
 
-- **GitHub Personal Access Token**: `repo` scope for private repos, `public_repo` for public only
-- **Platforms**: macOS (Intel + Apple Silicon), Linux (x64)
+- **GitHub Personal Access Token**: 
+  - `repo` scope for private repos
+  - `public_repo` for public only
+- **Platforms**: 
+  - macOS (Intel + Apple Silicon)
+  - Linux (x64)
 
 ## Installation
 
 ### Homebrew (macOS)
 
-PR Bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope to install.
+PR Bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope (that has access to `toniperic/pr-bro` repo) to install.
 
 ```bash
 export HOMEBREW_GITHUB_API_TOKEN=ghp_your_token_here
@@ -23,7 +27,7 @@ brew tap toniperic/tap
 brew install pr-bro
 ```
 
-Create a token at https://github.com/settings/tokens (requires `repo` scope).
+Create a token at https://github.com/settings/tokens.
 
 To upgrade:
 
@@ -80,7 +84,7 @@ Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keybo
 
 ## Features
 
-**Weighted scoring** calculates a single priority number for each PR based on age, approval count, size, labels, and whether you've reviewed it before. Older PRs score higher. Small PRs score higher than large ones. Labels like "urgent" can boost scores.
+**Weighted scoring** calculates a single priority number for each PR based on age, approval count, size, labels, and whether you've reviewed it before, all based on your preferences/configuration. Each parameter can be used to boost or penalize PRs score in any way you see fit.
 
 **Interactive TUI** shows all PRs sorted by score. Navigate with arrow keys or vim bindings. Press `d` to see the score breakdown for any PR. Press `r` to refresh.
 
@@ -91,8 +95,6 @@ Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keybo
 **Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `d` on any PR to open the detail view.
 
 **ETag-based HTTP caching** reduces GitHub API calls. Auto-refresh only fetches if data changed on the server. Manual refresh bypasses in-memory cache.
-
-**Version update notifications** appear as a banner when a new release is available. Dismiss with `x` or disable with `--no-version-check`.
 
 ## Configuration
 
