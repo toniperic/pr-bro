@@ -320,7 +320,7 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
             View::Active => vec![
                 ("j", "/", "k", ":nav "),
                 ("Enter", "", "", ":open "),
-                ("b", "", "", ":detail "),
+                ("b", "", "", ":breakdown "),
                 ("s", "", "", ":snooze "),
                 ("r", "", "", ":refresh "),
                 ("Tab", "", "", ":snoozed "),
@@ -330,7 +330,7 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
             View::Snoozed => vec![
                 ("j", "/", "k", ":nav "),
                 ("Enter", "", "", ":open "),
-                ("b", "", "", ":detail "),
+                ("b", "", "", ":breakdown "),
                 ("s", "", "", ":resnooze "),
                 ("u", "", "", ":unsnooze "),
                 ("r", "", "", ":refresh "),
