@@ -1,6 +1,7 @@
 [workspace]
 git_tag_name = "v{{ version }}"
 git_release_type = "auto"
+git_only = true
 pr_labels = ["release"]
 publish_timeout = "0s"
 
