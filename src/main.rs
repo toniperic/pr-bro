@@ -122,7 +122,9 @@ async fn main() {
 
     // Load config (with missing-config wizard prompt)
     let config_path = config_path_str.as_ref().map(PathBuf::from);
-    let resolved_path = config_path.clone().unwrap_or_else(pr_bro::config::get_config_path);
+    let resolved_path = config_path
+        .clone()
+        .unwrap_or_else(pr_bro::config::get_config_path);
     let config = if !resolved_path.exists() {
         // Config missing -- offer wizard if interactive terminal
         if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
