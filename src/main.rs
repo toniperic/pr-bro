@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use std::io::IsTerminal;
+use std::io::{BufRead, IsTerminal, Write as _};
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -37,6 +37,8 @@ enum Commands {
         /// Index number of the snoozed PR to unsnooze (1-based, as shown in --show-snoozed list)
         index: usize,
     },
+    /// Initialize a new config file with an interactive wizard
+    Init,
 }
 
 #[derive(Parser, Debug)]
@@ -84,6 +86,7 @@ async fn main() {
         .expect("Failed to install rustls crypto provider");
 
     let cli = Cli::parse();
+    let config_path_str = cli.config.clone();
     let command = cli.command.unwrap_or(Commands::List {
         show_snoozed: false,
     });
@@ -105,13 +108,67 @@ async fn main() {
         }
     }
 
-    // Load config
-    let config_path = cli.config.map(PathBuf::from);
-    let config = match pr_bro::config::load_config(config_path) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Config error: {:#}", e);
+    // Handle init subcommand (before config load)
+    if matches!(command, Commands::Init) {
+        let config_path = config_path_str.map(PathBuf::from);
+        match pr_bro::config::run_init_wizard(config_path) {
+            Ok(()) => std::process::exit(EXIT_SUCCESS),
+            Err(e) => {
+                eprintln!("Init failed: {:#}", e);
+                std::process::exit(EXIT_CONFIG);
+            }
+        }
+    }
+
+    // Load config (with missing-config wizard prompt)
+    let config_path = config_path_str.as_ref().map(PathBuf::from);
+    let resolved_path = config_path.clone().unwrap_or_else(pr_bro::config::get_config_path);
+    let config = if !resolved_path.exists() {
+        // Config missing -- offer wizard if interactive terminal
+        if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
+            eprintln!("No config found at {}", resolved_path.display());
+            eprint!("Would you like to create one now? [Y/n] ");
+            let _ = std::io::stderr().flush();
+            let mut answer = String::new();
+            let _ = std::io::stdin().lock().read_line(&mut answer);
+            let answer = answer.trim().to_lowercase();
+            if answer.is_empty() || answer == "y" || answer == "yes" {
+                match pr_bro::config::run_init_wizard(config_path) {
+                    Ok(()) => {
+                        // Re-load the config that was just written
+                        let reload_path = config_path_str.map(PathBuf::from);
+                        match pr_bro::config::load_config(reload_path) {
+                            Ok(c) => c,
+                            Err(e) => {
+                                eprintln!("Config error after init: {:#}", e);
+                                std::process::exit(EXIT_CONFIG);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Init failed: {:#}", e);
+                        std::process::exit(EXIT_CONFIG);
+                    }
+                }
+            } else {
+                eprintln!("No config file found. Run `pr-bro init` to create one.");
+                std::process::exit(EXIT_CONFIG);
+            }
+        } else {
+            // Non-interactive: just error out
+            eprintln!(
+                "Config file not found at {}. Run `pr-bro init` to create one.",
+                resolved_path.display()
+            );
             std::process::exit(EXIT_CONFIG);
+        }
+    } else {
+        match pr_bro::config::load_config(config_path) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("Config error: {:#}", e);
+                std::process::exit(EXIT_CONFIG);
+            }
         }
     };
 
@@ -500,6 +557,7 @@ async fn main() {
                 eprintln!("PR #{} was not snoozed.", pr.number);
             }
         }
+        Commands::Init => unreachable!("Init is handled before config loading"),
     }
 
     std::process::exit(EXIT_SUCCESS);
