@@ -1,5 +1,7 @@
+mod init;
 mod schema;
 
+pub use init::run_init_wizard;
 pub use schema::{Config, QueryConfig};
 
 use anyhow::{Context, Result};
