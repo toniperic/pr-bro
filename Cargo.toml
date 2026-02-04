@@ -2,7 +2,11 @@
 name = "pr-bro"
 version = "0.2.0"
 edition = "2021"
-publish = false
+description = "Know which PR to review next. Ranks pull requests by weighted scoring."
+license = "MIT"
+repository = "https://github.com/toniperic/pr-bro"
+keywords = ["github", "pull-request", "code-review", "tui", "cli"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 octocrab = "0.49"
