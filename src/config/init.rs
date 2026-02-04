@@ -79,33 +79,10 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
     println!("===========================");
     println!();
 
-    // 1. Config path
-    let default_config_path = default_path.unwrap_or_else(get_config_path);
-    let path_str = prompt_with_default(
-        "Where should the config be saved?",
-        &default_config_path.display().to_string(),
-    )?;
-    let config_path = PathBuf::from(&path_str);
-
-    // Check if file already exists
-    if config_path.exists() {
-        let overwrite = prompt_yes_no(
-            &format!(
-                "Config already exists at {}. Overwrite?",
-                config_path.display()
-            ),
-            false,
-        )?;
-        if !overwrite {
-            println!("Aborted.");
-            return Ok(());
-        }
-    }
-
-    // 2. Scoring configuration
+    // 1. Scoring configuration
     println!();
     let defaults = ScoringConfig::default();
-    let configure_scoring = prompt_yes_no("Configure scoring? (Enter accepts defaults)", true)?;
+    let configure_scoring = prompt_yes_no("Configure scoring? (n accepts defaults)", true)?;
 
     let scoring = if configure_scoring {
         println!();
@@ -308,7 +285,31 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         println!();
     }
 
-    // 4. Write config
+    // 4. Config path
+    let default_config_path = default_path.unwrap_or_else(get_config_path);
+    println!();
+    let path_str = prompt_with_default(
+        "Where should the config be saved?",
+        &default_config_path.display().to_string(),
+    )?;
+    let config_path = PathBuf::from(&path_str);
+
+    // Check if file already exists
+    if config_path.exists() {
+        let overwrite = prompt_yes_no(
+            &format!(
+                "Config already exists at {}. Overwrite?",
+                config_path.display()
+            ),
+            false,
+        )?;
+        if !overwrite {
+            println!("Aborted.");
+            return Ok(());
+        }
+    }
+
+    // 5. Write config
     let config = Config {
         scoring: Some(scoring),
         queries,
@@ -337,7 +338,7 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
     println!();
     println!("Config written to {}", config_path.display());
-    typewriter("Each scoring parameter you configured can be overridden per query. See the docs for details.");
+    typewriter("Each scoring parameter you configured can also be overridden per query, for more granular results. See the docs for details and the rest of the options.");
     println!("Run `pr-bro` to get started.");
 
     Ok(())
