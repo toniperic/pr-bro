@@ -2,6 +2,7 @@
 git_tag_name = "v{{ version }}"
 git_release_type = "auto"
 semver_check = false
+features_always_increment_minor = true
 pr_labels = ["release"]
 
 [changelog]
