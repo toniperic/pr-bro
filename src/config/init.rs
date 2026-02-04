@@ -103,17 +103,29 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
             .unwrap_or(defaults.base_score.unwrap_or(100.0));
 
         // Age factor
-        typewriter("The age factor rewards older PRs so they don't get forgotten. Format: '+N per DURATION' (e.g., '+1 per 1h' adds 1 point per hour).");
+        typewriter("The age factor rewards older PRs so they don't get forgotten.");
+        typewriter("Format: '+N per DURATION' adds points over time (e.g., '+1 per 1h' adds 1 point per hour).");
+        typewriter("Format: 'xN per DURATION' compounds over time (e.g., 'x1.05 per 1d' multiplies score by 1.05 each day).");
         println!();
         let age = prompt_with_default("Age factor", "+1 per 1h")?;
 
         // Approvals factor
-        typewriter("The approvals factor adjusts score based on how many approvals a PR already has. Format: '+N per 1' or 'xN per 1'.");
+        typewriter("The approvals factor adjusts score based on how many approvals a PR already has.");
+        typewriter("Available formats:");
+        typewriter("  +N per 1  -- adds N points per approval (e.g., '+10 per 1')");
+        typewriter("  xN per 1  -- multiplies score by N per approval (e.g., 'x0.8 per 1' to deprioritize approved PRs)");
+        typewriter("  +N        -- flat add regardless of count (e.g., '+20')");
+        typewriter("  xN        -- flat multiply regardless of count (e.g., 'x2')");
         println!();
         let approvals = prompt_with_default("Approvals factor", "+10 per 1")?;
 
         // Size buckets
-        typewriter("Size buckets let you boost or penalize PRs based on how many lines were changed. Small PRs are quicker to review!");
+        typewriter("Size buckets let you boost or penalize PRs based on how many lines were changed.");
+        typewriter("For example, if you prefer reviewing smaller PRs first, you might set:");
+        typewriter("  <100 lines  -> x5    (boosted -- review these first)");
+        typewriter("  100-500     -> x1    (neutral)");
+        typewriter("  >500 lines  -> x0.25 (penalized -- these drop to the bottom)");
+        typewriter("Stick with the defaults if you're unsure -- you can always tweak them later in the config file.");
         println!();
         let use_default_size =
             prompt_yes_no("Size buckets - use defaults? (<100: x5, 100-500: x1, >500: x0.5)", true)?;
@@ -151,7 +163,9 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         };
 
         // Previously reviewed
-        typewriter("If you've already reviewed a PR, you can deprioritize it so fresh PRs surface first. Use 'x0.5' to halve the score, or 'none' to skip.");
+        typewriter("If you've already left a review on a PR, you can adjust its score.");
+        typewriter("Use 'x2' to prioritize it (e.g., follow up on your feedback), or 'x0.5' to deprioritize it (focus on fresh PRs).");
+        typewriter("Use 'none' to skip this factor entirely.");
         println!();
         let prev_reviewed = prompt_with_default(
             "Previously reviewed factor (e.g., x0.5 to deprioritize)",
@@ -183,6 +197,8 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
     typewriter("  review-requested:@me is:open  -- PRs where you're a reviewer");
     typewriter("  author:@me is:open            -- Your own open PRs");
     typewriter("  repo:owner/name is:open       -- All open PRs in a specific repo");
+    typewriter("  review-requested:@me review:required is:open is:pr repo:owner/name");
+    typewriter("                                        -- combine qualifiers for precision");
     println!();
 
     let mut queries: Vec<QueryConfig> = Vec::new();
@@ -241,7 +257,7 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
     println!();
     println!("Config written to {}", config_path.display());
-    println!("Set PR_BRO_GH_TOKEN env var with your GitHub token to get started.");
+    println!("Run `pr-bro` to get started.");
 
     Ok(())
 }
