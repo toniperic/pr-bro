@@ -1,4 +1,4 @@
-# Contributing to pr-bro
+# Contributing to PR Bro
 
 ## Quick Start
 

@@ -1,6 +1,6 @@
 # Versioning
 
-pr-bro uses [Semantic Versioning 2.0](https://semver.org/) with automated version bumping via [release-plz](https://release-plz.dev/).
+PR Bro uses [Semantic Versioning 2.0](https://semver.org/) with automated version bumping via [release-plz](https://release-plz.dev/).
 
 ## Version Bump Rules
 
@@ -18,7 +18,7 @@ Commits trigger version bumps based on type:
 
 During 0.x releases (initial development), minor version bumps may include breaking changes per the SemVer 2.0 spec.
 
-### Breaking Changes for pr-bro
+### Breaking Changes for PR Bro
 
 These changes warrant a major version bump (or minor bump during 0.x):
 

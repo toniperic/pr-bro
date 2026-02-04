@@ -1,10 +1,10 @@
-# pr-bro
+# PR Bro
 
 [![CI](https://img.shields.io/github/actions/workflow/status/toniperic/pr-bro/ci.yml?branch=master)](https://github.com/toniperic/pr-bro/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/toniperic/pr-bro)](https://github.com/toniperic/pr-bro/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Know which PR to review next. pr-bro ranks pull requests by weighted scoring across your GitHub queries, so you always start with the most important review.
+Know which PR to review next. PR Bro ranks pull requests by weighted scoring across your GitHub queries, so you always start with the most important review.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ Know which PR to review next. pr-bro ranks pull requests by weighted scoring acr
 
 ### Homebrew (macOS)
 
-pr-bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope to install.
+PR Bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope to install.
 
 ```bash
 export HOMEBREW_GITHUB_API_TOKEN=ghp_your_token_here
