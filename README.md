@@ -84,13 +84,13 @@ Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keybo
 
 **Weighted scoring** calculates a single priority number for each PR based on age, approval count, size, labels, and whether you've reviewed it before, all based on your preferences/configuration. Each parameter can be used to boost or penalize PRs score in any way you see fit.
 
-**Interactive TUI** shows all PRs sorted by score. Navigate with arrow keys or vim bindings. Press `d` to see the score breakdown for any PR. Press `r` to refresh.
+**Interactive TUI** shows all PRs sorted by score. Navigate with arrow keys or vim bindings. Press `b` to see the score breakdown for any PR. Press `r` to refresh.
 
 **Multiple queries** let you track different PR sets. Each query can override global scoring rules. First-match-wins when a PR appears in multiple queries.
 
 **Snooze PRs** to hide them temporarily. Press `s` to snooze for a custom duration or indefinitely. Snoozed PRs live in a separate tab and don't clutter your main list.
 
-**Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `d` on any PR to open the detail view.
+**Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `b` on any PR to open the detail view.
 
 **ETag-based HTTP caching** reduces GitHub API calls. Auto-refresh only fetches if data changed on the server. Manual refresh bypasses in-memory cache.
 

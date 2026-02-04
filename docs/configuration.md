@@ -127,7 +127,7 @@ labels:
 
 A PR with both "urgent" and "critical" labels gets both effects: score + 10, then x2.
 
-Each matching label appears as a separate entry in the score breakdown detail view (press `d`).
+Each matching label appears as a separate entry in the score breakdown detail view (press `b`).
 
 ### Previously Reviewed
 
