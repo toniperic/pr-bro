@@ -3,7 +3,7 @@ use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
 use crate::config::{get_config_path, Config, QueryConfig};
-use crate::scoring::{ScoringConfig, SizeBucket, SizeConfig};
+use crate::scoring::{Effect, LabelEffect, RangeOp, ScoringConfig, SizeBucket, SizeConfig};
 
 /// Prompt user with a message and return their trimmed input.
 fn prompt(message: &str) -> Result<String> {
@@ -53,6 +53,22 @@ fn typewriter(text: &str) {
     println!();
 }
 
+/// Validate an approvals effect string using the same "per N" trick as validation.rs.
+/// Approvals use "per N" to mean "per N approvals", not per time unit.
+/// We convert bare numeric per-parts to "per 1sec" for parsing validation.
+fn validate_approvals_str(s: &str) -> Result<(), String> {
+    let parseable_str = if let Some((effect_part, per_part)) = s.split_once(" per ") {
+        if per_part.trim().chars().all(|c| c.is_numeric() || c == '.') {
+            format!("{} per 1sec", effect_part)
+        } else {
+            s.to_string()
+        }
+    } else {
+        s.to_string()
+    };
+    Effect::parse(&parseable_str).map(|_| ()).map_err(|e| e.to_string())
+}
+
 /// Run the interactive init wizard to create a config file.
 ///
 /// If `default_path` is Some, uses that as the config file path.
@@ -96,17 +112,27 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
         // Base score
         typewriter("The base score is the starting point for every PR. All other factors add to or multiply this number.");
-        let base_str = prompt_with_default("Base score", "100")?;
-        let base_score: f64 = base_str
-            .parse()
-            .unwrap_or(defaults.base_score.unwrap_or(100.0));
+        let base_score: f64 = loop {
+            let base_str = prompt_with_default("Base score", "100")?;
+            match base_str.parse::<f64>() {
+                Ok(v) if v >= 0.0 => break v,
+                Ok(_) => println!("  Invalid: must be non-negative. Try again."),
+                Err(_) => println!("  Invalid: must be a non-negative number. Try again."),
+            }
+        };
 
         // Age factor
         println!();
         typewriter("The age factor rewards older PRs so they don't get forgotten.");
         typewriter("Format: '+N per DURATION' adds points over time (e.g., '+1 per 1h' adds 1 point per hour).");
         typewriter("Format: 'xN per DURATION' compounds over time (e.g., 'x1.05 per 1d' multiplies score by 1.05 each day).");
-        let age = prompt_with_default("Age factor", "+1 per 1h")?;
+        let age = loop {
+            let input = prompt_with_default("Age factor", "+1 per 1h")?;
+            match Effect::parse(&input) {
+                Ok(_) => break input,
+                Err(e) => println!("  Invalid: {}. Try again.", e),
+            }
+        };
 
         // Approvals factor
         println!();
@@ -116,7 +142,13 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         typewriter("  xN per 1  -- multiplies score by N per approval (e.g., 'x0.8 per 1' to deprioritize approved PRs)");
         typewriter("  +N        -- flat add regardless of count (e.g., '+20')");
         typewriter("  xN        -- flat multiply regardless of count (e.g., 'x2')");
-        let approvals = prompt_with_default("Approvals factor", "+10 per 1")?;
+        let approvals = loop {
+            let input = prompt_with_default("Approvals factor", "+10 per 1")?;
+            match validate_approvals_str(&input) {
+                Ok(_) => break input,
+                Err(e) => println!("  Invalid: {}. Try again.", e),
+            }
+        };
 
         // Size buckets
         println!();
@@ -135,16 +167,28 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
             println!();
             let mut buckets: Vec<SizeBucket> = Vec::new();
             loop {
-                let range = prompt("  Line count range (e.g., '<100', '100-500', '>500'): ")?;
-                if range.is_empty() {
-                    println!("  Range is required.");
-                    continue;
-                }
-                let effect = prompt("  Score effect (e.g., 'x5', 'x1', 'x0.5'): ")?;
-                if effect.is_empty() {
-                    println!("  Effect is required.");
-                    continue;
-                }
+                let range = loop {
+                    let r = prompt("  Line count range (e.g., '<100', '100-500', '>500'): ")?;
+                    if r.is_empty() {
+                        println!("  Range is required.");
+                        continue;
+                    }
+                    match RangeOp::parse(&r) {
+                        Ok(_) => break r,
+                        Err(e) => println!("  Invalid range: {}. Try again.", e),
+                    }
+                };
+                let effect = loop {
+                    let e = prompt("  Score effect (e.g., 'x5', 'x1', 'x0.5'): ")?;
+                    if e.is_empty() {
+                        println!("  Effect is required.");
+                        continue;
+                    }
+                    match Effect::parse(&e) {
+                        Ok(_) => break e,
+                        Err(err) => println!("  Invalid effect: {}. Try again.", err),
+                    }
+                };
                 buckets.push(SizeBucket { range, effect });
                 let add_more = prompt_yes_no("  Add another size bucket?", false)?;
                 if !add_more {
@@ -166,14 +210,18 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         typewriter("If you've already left a review on a PR, you can adjust its score.");
         typewriter("Use 'x2' to prioritize it (e.g., follow up on your feedback), or 'x0.5' to deprioritize it (focus on fresh PRs).");
         typewriter("Use 'none' to skip this factor entirely.");
-        let prev_reviewed = prompt_with_default(
-            "Previously reviewed factor (e.g., x0.5 to deprioritize)",
-            "none",
-        )?;
-        let previously_reviewed = if prev_reviewed == "none" || prev_reviewed.is_empty() {
-            None
-        } else {
-            Some(prev_reviewed)
+        let previously_reviewed = loop {
+            let input = prompt_with_default(
+                "Previously reviewed factor (e.g., x0.5 to deprioritize)",
+                "none",
+            )?;
+            if input == "none" || input.is_empty() {
+                break None;
+            }
+            match Effect::parse(&input) {
+                Ok(_) => break Some(input),
+                Err(e) => println!("  Invalid: {}. Try again.", e),
+            }
         };
 
         ScoringConfig {
