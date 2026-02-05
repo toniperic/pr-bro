@@ -33,28 +33,17 @@ To upgrade:
 brew upgrade pr-bro
 ```
 
-### From Source
-
-Clone and build with Cargo:
+### Cargo
 
 ```bash
-git clone git@github.com:toniperic/pr-bro.git
-cd pr-bro
-cargo install --path .
+cargo install pr-bro
 ```
 
 Requires Rust toolchain. Install from [rustup.rs](https://rustup.rs).
 
 ### Binary Download
 
-Download pre-built binaries from the [GitHub Releases](https://github.com/toniperic/pr-bro/releases) page.
-
-Available archives:
-- macOS Intel: `pr-bro-<version>-x86_64-apple-darwin.tar.gz`
-- macOS Apple Silicon: `pr-bro-<version>-aarch64-apple-darwin.tar.gz`
-- Linux: `pr-bro-<version>-x86_64-unknown-linux-gnu.tar.gz`
-
-Extract and move to your PATH:
+Download pre-built binaries from the [GitHub Releases](https://github.com/toniperic/pr-bro/releases) page. Extract and move to your PATH:
 
 ```bash
 tar -xzf pr-bro-<version>-<platform>.tar.gz
