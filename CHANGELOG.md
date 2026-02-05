@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4](https://github.com/toniperic/pr-bro/compare/v0.2.3...v0.2.4) - 2026-02-05
+
+### Fixed
+
+- update rpassword API call for v7.x compatibility
+
+### Other
+
+- *(quick-025)* filter release-plz to meaningful commit types
+- run cargo fmt
+- *(deps)* bump rpassword from 5.0.1 to 7.4.0
+- add Asciinema demo link to README
+
 ## [0.2.3](https://github.com/toniperic/pr-bro/compare/v0.2.2...v0.2.3) - 2026-02-05
 
 ### Other
