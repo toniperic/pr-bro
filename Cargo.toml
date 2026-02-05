@@ -14,7 +14,7 @@ tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.13", features = ["json"] }
 rustls = { version = "0.23", features = ["ring"] }
 clap = { version = "4.5", features = ["derive"] }
-serde-saphyr = "0.0.16"
+serde-saphyr = "0.0.17"
 serde = { version = "1", features = ["derive"] }
 anyhow = "1"
 dirs = "6.0"
