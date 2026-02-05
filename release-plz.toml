@@ -4,6 +4,7 @@ git_release_type = "auto"
 semver_check = false
 features_always_increment_minor = true
 pr_labels = ["release"]
+release_commits = "^(feat|fix|perf|refactor)[(:]"
 
 [changelog]
 protect_breaking_commits = true
