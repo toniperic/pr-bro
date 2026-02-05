@@ -7,8 +7,8 @@ pub fn prompt_for_token() -> Result<String> {
     println!("Required scopes: repo (for private repos) or public_repo (for public only)");
     println!();
 
-    let token = rpassword::prompt_password("Enter token: ")
-        .context("Failed to read token from stdin")?;
+    let token =
+        rpassword::prompt_password("Enter token: ").context("Failed to read token from stdin")?;
 
     let token = token.trim();
 
