@@ -17,15 +17,10 @@ Know which PR to review next. PR Bro ranks pull requests by weighted scoring acr
 
 ### Homebrew (macOS)
 
-PR Bro's Homebrew tap is hosted in a private GitHub repository. You need a GitHub token with `repo` scope (that has access to `toniperic/pr-bro` repo) to install.
-
 ```bash
-export HOMEBREW_GITHUB_API_TOKEN=ghp_your_token_here
 brew tap toniperic/tap
 brew install pr-bro
 ```
-
-Create a token at https://github.com/settings/tokens.
 
 To upgrade:
 

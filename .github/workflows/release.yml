@@ -131,10 +131,6 @@ jobs:
           # Clone tap repo
           git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/toniperic/homebrew-tap.git" tap-repo
 
-          # Copy download strategy to tap repo
-          mkdir -p tap-repo/lib
-          cp homebrew/private_download_strategy.rb tap-repo/lib/private_download_strategy.rb
-
           # Generate formula from template
           sed -e "s/HOMEBREW_VERSION/${VERSION}/g" \
               -e "s/INTEL_SHA256/${INTEL_SHA256}/g" \
@@ -145,7 +141,7 @@ jobs:
           cd tap-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/pr-bro.rb lib/private_download_strategy.rb
+          git add Formula/pr-bro.rb
           git diff --cached --quiet && echo "No changes to formula" && exit 0
           git commit -m "pr-bro ${TAG}"
           git push
