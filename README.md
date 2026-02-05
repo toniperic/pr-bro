@@ -63,20 +63,13 @@ mv pr-bro /usr/local/bin/
 
 ## Quick Usage
 
-Set your GitHub token and run:
-
 ```bash
-export PR_BRO_GH_TOKEN=ghp_your_token_here
 pr-bro
 ```
 
-Create `~/.config/pr-bro/config.yaml` with at least one query:
+On first run, PR Bro will prompt you with a series of questions to set up your configuration. It will also ask for your GitHub token interactively. To skip the token prompt, set the `PR_BRO_GH_TOKEN` environment variable.
 
-```yaml
-queries:
-  - name: my-reviews
-    query: "is:pr review-requested:@me"
-```
+For the full list of configuration options, see the [Configuration Reference](docs/configuration.md).
 
 Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keyboard shortcuts.
 
@@ -93,22 +86,6 @@ Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keybo
 **Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `b` on any PR to open the detail view.
 
 **ETag-based HTTP caching** reduces GitHub API calls. Auto-refresh only fetches if data changed on the server. Manual refresh bypasses in-memory cache.
-
-## Configuration
-
-Configuration file location: `~/.config/pr-bro/config.yaml`
-
-Minimal example with one query:
-
-```yaml
-queries:
-  - name: my-reviews
-    query: "is:pr review-requested:@me"
-```
-
-For full scoring options, per-query overrides, effect syntax, and validation details, see [Configuration Reference](docs/configuration.md).
-
-For cache location and behavior, see [Caching](docs/caching.md).
 
 ## Contributing
 
