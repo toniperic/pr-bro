@@ -148,7 +148,7 @@ jobs:
 
       - name: Create issue if tap update failed
         if: steps.update-tap.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           script: |
