@@ -5,6 +5,8 @@ pub mod ui;
 
 pub use app::App;
 
+use std::time::Duration;
+
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use event::{Event, EventHandler};
 
@@ -25,13 +27,16 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
     let auth_username_clone = app.auth_username.clone();
 
     let mut pending_fetch: Option<tokio::task::JoinHandle<_>> = Some(tokio::spawn(async move {
-        crate::fetch::fetch_and_score_prs(
-            &client_clone,
-            &config_clone,
-            &snooze_clone,
-            &cache_config_clone,
-            verbose,
-            auth_username_clone.as_deref(),
+        tokio::time::timeout(
+            Duration::from_secs(20),
+            crate::fetch::fetch_and_score_prs(
+                &client_clone,
+                &config_clone,
+                &snooze_clone,
+                &cache_config_clone,
+                verbose,
+                auth_username_clone.as_deref(),
+            ),
         )
         .await
     }));
@@ -83,10 +88,10 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
             if handle.is_finished() {
                 let handle = pending_fetch.take().unwrap();
                 match handle.await {
-                    Ok(Ok((active, snoozed, rate_limit))) => {
+                    Ok(Ok(Ok((active, snoozed, rate_limit)))) => {
                         app.update_prs(active, snoozed, rate_limit);
                     }
-                    Ok(Err(e)) => {
+                    Ok(Ok(Err(e))) => {
                         if e.downcast_ref::<crate::fetch::AuthError>().is_some() {
                             // Auth failure: restore terminal, re-prompt, re-init
                             ratatui::restore();
@@ -140,6 +145,12 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
                             app.show_flash(format!("Refresh failed: {}", e));
                         }
                     }
+                    Ok(Err(_elapsed)) => {
+                        // Timeout: fetch took longer than 20 seconds
+                        app.show_flash(
+                            "Refresh timed out (20s). Will retry on next refresh.".to_string(),
+                        );
+                    }
                     Err(e) => {
                         app.show_flash(format!("Refresh task panicked: {}", e));
                     }
@@ -180,13 +191,16 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
             let auth_username_clone = app.auth_username.clone();
 
             pending_fetch = Some(tokio::spawn(async move {
-                crate::fetch::fetch_and_score_prs(
-                    &client_clone,
-                    &config_clone,
-                    &snooze_clone,
-                    &cache_config_clone,
-                    verbose,
-                    auth_username_clone.as_deref(),
+                tokio::time::timeout(
+                    Duration::from_secs(20),
+                    crate::fetch::fetch_and_score_prs(
+                        &client_clone,
+                        &config_clone,
+                        &snooze_clone,
+                        &cache_config_clone,
+                        verbose,
+                        auth_username_clone.as_deref(),
+                    ),
                 )
                 .await
             }));
