@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/toniperic/pr-bro/compare/v0.2.4...v0.3.0) - 2026-02-06
+
+### Added
+
+- add 20s timeout to refresh fetch to prevent indefinite hangs
+
+### Fixed
+
+- lighten muted text color for better readability
+
+### Other
+
+- remove downloads badge from README
+
 ## [0.2.4](https://github.com/toniperic/pr-bro/compare/v0.2.3...v0.2.4) - 2026-02-05
 
 ### Fixed
