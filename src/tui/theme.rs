@@ -41,7 +41,7 @@ pub const TAB_ACTIVE: Style = Style::new().reversed();
 pub const ROW_SELECTED: Style = Style::new().reversed();
 
 // General colors
-pub const MUTED: Color = Color::DarkGray; // For secondary text
+pub const MUTED: Color = Color::Gray; // For secondary text (ANSI 7, terminal-themed)
 
 // Title bar colors
 pub const TITLE_COLOR: Color = Color::Cyan; // Accent color for app name

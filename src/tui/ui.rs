@@ -737,7 +737,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
                 ),
                 Span::styled(
                     format!("{:.1}", factor.before),
-                    Style::default().fg(Color::DarkGray),
+                    Style::default().fg(theme::MUTED),
                 ),
                 Span::raw(" -> "),
                 Span::styled(
@@ -749,7 +749,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
             // Line 2: indented description
             lines.push(Line::from(Span::styled(
                 format!("  {}", factor.description),
-                Style::default().fg(Color::DarkGray),
+                Style::default().fg(theme::MUTED),
             )));
         }
     }
