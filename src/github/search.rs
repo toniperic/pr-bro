@@ -309,7 +309,9 @@ async fn enrich_pr_with_rate_limit_check(
             let err_str = e.to_string();
             if err_str.contains("rate limit") || err_str.contains("403") {
                 if verbose {
-                    eprintln!("Warning: Rate limit hit during enrichment. Returning partial results.");
+                    eprintln!(
+                        "Warning: Rate limit hit during enrichment. Returning partial results."
+                    );
                 }
                 rate_limited.store(true, Ordering::Relaxed);
             } else if verbose {
