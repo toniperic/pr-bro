@@ -1,3 +1,4 @@
+use crate::buffered_eprintln;
 use crate::config::Config;
 use crate::github::cache::CacheConfig;
 use crate::github::types::PullRequest;
@@ -47,7 +48,7 @@ pub async fn fetch_and_score_prs(
         } else {
             "disabled (--no-cache)"
         };
-        eprintln!("Cache: {}", cache_status);
+        buffered_eprintln!("Cache: {}", cache_status);
     }
 
     // Resolve global scoring config once (fallback for queries without per-query scoring)
@@ -73,7 +74,6 @@ pub async fn fetch_and_score_prs(
                 &query,
                 auth_username_clone.as_deref(),
                 exclude_patterns,
-                verbose,
             )
             .await;
             (query_name, query, query_index, result)
@@ -84,7 +84,7 @@ pub async fn fetch_and_score_prs(
         match result {
             Ok(prs) => {
                 if verbose {
-                    eprintln!(
+                    buffered_eprintln!(
                         "  Found {} PRs for {}",
                         prs.len(),
                         name.as_deref().unwrap_or(&query)
@@ -99,13 +99,11 @@ pub async fn fetch_and_score_prs(
                 if e.downcast_ref::<AuthError>().is_some() {
                     return Err(e);
                 }
-                if verbose {
-                    eprintln!(
-                        "Query failed: {} - {}",
-                        name.as_deref().unwrap_or(&query),
-                        e
-                    );
-                }
+                buffered_eprintln!(
+                    "Query failed: {} - {}",
+                    name.as_deref().unwrap_or(&query),
+                    e
+                );
             }
         }
     }
@@ -132,7 +130,7 @@ pub async fn fetch_and_score_prs(
         .collect();
 
     if verbose {
-        eprintln!("After deduplication: {} unique PRs", unique_prs.len());
+        buffered_eprintln!("After deduplication: {} unique PRs", unique_prs.len());
     }
 
     // Split into active and snoozed
@@ -140,7 +138,7 @@ pub async fn fetch_and_score_prs(
     let snoozed_prs = filter_snoozed_prs(unique_prs, snooze_state);
 
     if verbose {
-        eprintln!(
+        buffered_eprintln!(
             "After filter: {} active, {} snoozed",
             active_prs.len(),
             snoozed_prs.len()

@@ -6,5 +6,6 @@ pub mod github;
 pub mod output;
 pub mod scoring;
 pub mod snooze;
+pub mod stderr_buffer;
 pub mod tui;
 pub mod version_check;

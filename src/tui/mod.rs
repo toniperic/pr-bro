@@ -11,6 +11,9 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use event::{Event, EventHandler};
 
 pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Result<()> {
+    // Buffer stderr while TUI is active to prevent output corrupting the display
+    crate::stderr_buffer::activate();
+
     // Init terminal (sets up panic hooks automatically)
     let mut terminal = ratatui::init();
 
@@ -214,6 +217,12 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
 
     // Restore terminal
     ratatui::restore();
+
+    // Flush buffered stderr messages now that the terminal is restored
+    for msg in crate::stderr_buffer::drain() {
+        eprintln!("{}", msg);
+    }
+
     Ok(())
 }
 
