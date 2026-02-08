@@ -73,6 +73,7 @@ pub async fn fetch_and_score_prs(
                 &query,
                 auth_username_clone.as_deref(),
                 exclude_patterns,
+                verbose,
             )
             .await;
             (query_name, query, query_index, result)
@@ -98,11 +99,13 @@ pub async fn fetch_and_score_prs(
                 if e.downcast_ref::<AuthError>().is_some() {
                     return Err(e);
                 }
-                eprintln!(
-                    "Query failed: {} - {}",
-                    name.as_deref().unwrap_or(&query),
-                    e
-                );
+                if verbose {
+                    eprintln!(
+                        "Query failed: {} - {}",
+                        name.as_deref().unwrap_or(&query),
+                        e
+                    );
+                }
             }
         }
     }

@@ -218,6 +218,7 @@ async fn enrich_pr(
     pr: &mut PullRequest,
     auth_username: Option<&str>,
     exclude_patterns: &Option<Vec<String>>,
+    verbose: bool,
 ) -> Result<()> {
     // Parse owner/repo from pr.repo field
     let parts: Vec<&str> = pr.repo.split('/').collect();
@@ -246,19 +247,23 @@ async fn enrich_pr(
                             match apply_size_exclusions(&files, patterns) {
                                 Ok(filtered) => pr.filtered_size = Some(filtered),
                                 Err(e) => {
-                                    eprintln!(
-                                        "Warning: Failed to apply size exclusions for PR {}: {}",
-                                        pr.number, e
-                                    );
+                                    if verbose {
+                                        eprintln!(
+                                            "Warning: Failed to apply size exclusions for PR {}: {}",
+                                            pr.number, e
+                                        );
+                                    }
                                     // Leave filtered_size as None — fallback to aggregate size
                                 }
                             }
                         }
                         Err(e) => {
-                            eprintln!(
-                                "Warning: Failed to fetch file list for PR {}: {}",
-                                pr.number, e
-                            );
+                            if verbose {
+                                eprintln!(
+                                    "Warning: Failed to fetch file list for PR {}: {}",
+                                    pr.number, e
+                                );
+                            }
                             // Leave filtered_size as None — fallback to aggregate size
                         }
                     }
@@ -269,7 +274,9 @@ async fn enrich_pr(
         }
         Err(e) => {
             // If enrichment fails, log but don't fail the whole operation
-            eprintln!("Warning: Failed to enrich PR {}: {}", pr.number, e);
+            if verbose {
+                eprintln!("Warning: Failed to enrich PR {}: {}", pr.number, e);
+            }
             Ok(())
         }
     }
@@ -282,6 +289,7 @@ async fn enrich_pr_with_rate_limit_check(
     rate_limited: Arc<AtomicBool>,
     auth_username: Option<String>,
     exclude_patterns: Option<Vec<String>>,
+    verbose: bool,
 ) -> PullRequest {
     if rate_limited.load(Ordering::Relaxed) {
         return pr; // Skip enrichment if rate limited
@@ -292,6 +300,7 @@ async fn enrich_pr_with_rate_limit_check(
         &mut pr,
         auth_username.as_deref(),
         &exclude_patterns,
+        verbose,
     )
     .await
     {
@@ -299,9 +308,11 @@ async fn enrich_pr_with_rate_limit_check(
         Err(e) => {
             let err_str = e.to_string();
             if err_str.contains("rate limit") || err_str.contains("403") {
-                eprintln!("Warning: Rate limit hit during enrichment. Returning partial results.");
+                if verbose {
+                    eprintln!("Warning: Rate limit hit during enrichment. Returning partial results.");
+                }
                 rate_limited.store(true, Ordering::Relaxed);
-            } else {
+            } else if verbose {
                 eprintln!("Warning: Failed to enrich PR {}: {}", pr.number, e);
             }
         }
@@ -315,6 +326,7 @@ pub async fn search_and_enrich_prs(
     query: &str,
     auth_username: Option<&str>,
     exclude_patterns: Option<Vec<String>>,
+    verbose: bool,
 ) -> Result<Vec<PullRequest>> {
     let prs = search_prs(client, query).await?;
 
@@ -337,6 +349,7 @@ pub async fn search_and_enrich_prs(
                 rate_limited.clone(),
                 auth_username.map(|s| s.to_string()),
                 exclude_patterns.clone(),
+                verbose,
             ));
         }
     }
@@ -354,6 +367,7 @@ pub async fn search_and_enrich_prs(
                     rate_limited.clone(),
                     auth_username.map(|s| s.to_string()),
                     exclude_patterns.clone(),
+                    verbose,
                 ));
             }
         }
