@@ -33,6 +33,28 @@ pub fn clear_cache() -> Result<()> {
     }
 }
 
+/// Evict cache entries older than 7 days. Returns number of entries removed.
+/// Best-effort: errors during listing or removal are silently ignored.
+pub fn evict_stale_entries() -> usize {
+    let cache_path = get_cache_path();
+    let threshold = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    // 7 days in milliseconds
+    let max_age_ms: u128 = 7 * 24 * 60 * 60 * 1000;
+    let cutoff = threshold.saturating_sub(max_age_ms);
+
+    let mut removed = 0usize;
+    for entry in cacache::list_sync(&cache_path).flatten() {
+        if entry.time < cutoff {
+            let _ = cacache::remove_sync(&cache_path, &entry.key);
+            removed += 1;
+        }
+    }
+    removed
+}
+
 /// Disk-persistent cache implementing octocrab's CacheStorage trait
 ///
 /// Uses cacache for disk persistence and in-memory HashMap for fast access.

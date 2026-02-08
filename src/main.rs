@@ -108,6 +108,12 @@ async fn main() {
         }
     }
 
+    // Evict stale cache entries (older than 7 days)
+    let evicted = pr_bro::github::evict_stale_entries();
+    if cli.verbose && evicted > 0 {
+        eprintln!("Evicted {} stale cache entries (older than 7 days)", evicted);
+    }
+
     // Handle init subcommand (before config load)
     if matches!(command, Commands::Init) {
         let config_path = config_path_str.map(PathBuf::from);
