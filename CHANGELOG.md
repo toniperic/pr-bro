@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3](https://github.com/toniperic/pr-bro/compare/v0.3.2...v0.3.3) - 2026-02-08
+
+### Fixed
+
+- prevent caching of truncated GitHub API responses
+- buffer stderr during TUI mode to prevent display corruption
+
 ## [0.3.2](https://github.com/toniperic/pr-bro/compare/v0.3.1...v0.3.2) - 2026-02-08
 
 ### Fixed
