@@ -227,6 +227,13 @@ impl Drop for DiskCacheWriter {
             headers: self.response.headers.clone(),
         };
 
+        // Validate that the response body is valid JSON before caching
+        // Truncated/incomplete responses from network failures should not be persisted
+        if serde_json::from_slice::<serde_json::Value>(&response.body).is_err() {
+            // Skip caching - body is empty or invalid JSON
+            return;
+        }
+
         // Write to in-memory cache
         {
             let mut data = self.cache.lock().unwrap();
@@ -239,5 +246,86 @@ impl Drop for DiskCacheWriter {
         if let Ok(serialized) = serde_json::to_vec(&entry) {
             let _ = cacache::write_sync(&self.cache_path, &uri_key, &serialized);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use http::{HeaderMap, Uri};
+    use octocrab::service::middleware::cache::{CacheKey, CacheStorage};
+
+    fn unique_cache_path(test_name: &str) -> PathBuf {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("pr-bro-test-cache-{}-{}", test_name, timestamp))
+    }
+
+    #[test]
+    fn test_valid_json_is_cached() {
+        let cache_path = unique_cache_path("valid");
+        let cache = DiskCache::new(cache_path.clone());
+
+        let uri = Uri::from_static("https://api.github.com/repos/test/test/pulls/1");
+        let key = CacheKey::ETag("test-etag".to_string());
+        let headers = HeaderMap::new();
+
+        // Write valid JSON body
+        let mut writer = cache.writer(&uri, key, headers);
+        writer.write_body(br#"{"login":"test","id":1}"#);
+        drop(writer);
+
+        // Verify cache hit
+        assert!(cache.try_hit(&uri).is_some());
+        assert!(cache.load(&uri).is_some());
+
+        // Cleanup
+        let _ = std::fs::remove_dir_all(&cache_path);
+    }
+
+    #[test]
+    fn test_truncated_json_is_not_cached() {
+        let cache_path = unique_cache_path("truncated");
+        let cache = DiskCache::new(cache_path.clone());
+
+        let uri = Uri::from_static("https://api.github.com/repos/test/test/pulls/2");
+        let key = CacheKey::ETag("test-etag-2".to_string());
+        let headers = HeaderMap::new();
+
+        // Write truncated JSON body (missing closing brace and value)
+        let mut writer = cache.writer(&uri, key, headers);
+        writer.write_body(br#"{"login":"test","id":"#);
+        drop(writer);
+
+        // Verify cache miss - truncated JSON should not be cached
+        assert!(cache.try_hit(&uri).is_none());
+        assert!(cache.load(&uri).is_none());
+
+        // Cleanup
+        let _ = std::fs::remove_dir_all(&cache_path);
+    }
+
+    #[test]
+    fn test_empty_body_is_not_cached() {
+        let cache_path = unique_cache_path("empty");
+        let cache = DiskCache::new(cache_path.clone());
+
+        let uri = Uri::from_static("https://api.github.com/repos/test/test/pulls/3");
+        let key = CacheKey::ETag("test-etag-3".to_string());
+        let headers = HeaderMap::new();
+
+        // Write empty body
+        let mut writer = cache.writer(&uri, key, headers);
+        writer.write_body(b"");
+        drop(writer);
+
+        // Verify cache miss - empty body should not be cached
+        assert!(cache.try_hit(&uri).is_none());
+        assert!(cache.load(&uri).is_none());
+
+        // Cleanup
+        let _ = std::fs::remove_dir_all(&cache_path);
     }
 }
