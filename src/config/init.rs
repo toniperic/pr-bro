@@ -274,12 +274,19 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         query_count += 1;
         let name = format!("Query {}", query_count);
 
-        let query = loop {
-            let q = prompt("GitHub search query: ")?;
-            if !q.is_empty() {
-                break q;
+        let query = if query_count == 1 {
+            prompt_with_default(
+                "GitHub search query",
+                "review-requested:@me review:required is:open",
+            )?
+        } else {
+            loop {
+                let q = prompt("GitHub search query: ")?;
+                if !q.is_empty() {
+                    break q;
+                }
+                println!("  Search query is required.");
             }
-            println!("  Search query is required.");
         };
 
         queries.push(QueryConfig {
