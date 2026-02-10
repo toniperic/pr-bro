@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4](https://github.com/toniperic/pr-bro/compare/v0.3.3...v0.3.4) - 2026-02-10
+
+### Fixed
+
+- add inner padding to score breakdown modal ([#66](https://github.com/toniperic/pr-bro/pull/66))
+
+### Other
+
+- *(deps)* bump serde-saphyr from 0.0.17 to 0.0.18
+- *(deps)* bump webbrowser from 1.0.6 to 1.1.0
+- *(deps)* bump reqwest from 0.13.1 to 0.13.2
+- default query to review-requested:@me review:required is:open
+
 ## [0.3.3](https://github.com/toniperic/pr-bro/compare/v0.3.2...v0.3.3) - 2026-02-08
 
 ### Fixed
