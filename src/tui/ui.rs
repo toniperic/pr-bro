@@ -572,113 +572,43 @@ fn render_help_popup(frame: &mut Frame, app: &App) {
     // Get inner area (inside the border)
     let inner = block.inner(popup_area);
 
-    // Build help text with two-column layout
-    let help_lines = vec![
-        Line::from(vec![
-            Span::styled(
-                "j / Down      ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Move down"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "k / Up        ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Move up"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "Enter / o     ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Open PR in browser"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "b             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Score breakdown"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "s             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Snooze / re-snooze PR"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "u             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Unsnooze PR"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "z             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Undo last action"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "Tab           ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Toggle Active/Snoozed"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "r             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Refresh PRs (bypasses cache)"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "?             ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Show/hide this help"),
-        ]),
-        Line::from(vec![
-            Span::styled(
-                "q / Ctrl-c    ",
-                Style::default()
-                    .fg(app.theme_colors.status_key_color)
-                    .bold(),
-            ),
-            Span::raw("Quit"),
-        ]),
-        Line::from(""),
-        Line::from(Span::styled(
-            "Press any key to close",
-            Style::default().fg(app.theme_colors.muted),
-        )),
+    // Build help text with two-column layout using programmatic padding
+    let help_entries: Vec<(&str, &str)> = vec![
+        ("j / Down", "Move down"),
+        ("k / Up", "Move up"),
+        ("Enter / o", "Open PR in browser"),
+        ("b", "Score breakdown"),
+        ("s", "Snooze / re-snooze PR"),
+        ("u", "Unsnooze PR"),
+        ("z", "Undo last action"),
+        ("Tab", "Toggle Active/Snoozed"),
+        ("r", "Refresh PRs (bypasses cache)"),
+        ("?", "Show/hide this help"),
+        ("q / Ctrl-c", "Quit"),
     ];
+
+    let max_key_width = help_entries.iter().map(|(k, _)| k.len()).max().unwrap_or(0);
+
+    let mut help_lines: Vec<Line> = help_entries
+        .iter()
+        .map(|(key, description)| {
+            Line::from(vec![
+                Span::styled(
+                    format!("{:<width$}", key, width = max_key_width + 4),
+                    Style::default()
+                        .fg(app.theme_colors.status_key_color)
+                        .bold(),
+                ),
+                Span::raw(*description),
+            ])
+        })
+        .collect();
+
+    help_lines.push(Line::from(""));
+    help_lines.push(Line::from(Span::styled(
+        "Press any key to close",
+        Style::default().fg(app.theme_colors.muted),
+    )));
 
     let help_text = Paragraph::new(help_lines);
     frame.render_widget(help_text, inner);
