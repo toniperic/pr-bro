@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/toniperic/pr-bro/compare/v0.3.4...v0.4.0) - 2026-02-11
+
+### Added
+
+- add light and dark theme support with auto-detection
+
+### Other
+
+- disable duplicate GitHub auto-generated release notes
+- replace theme constants with ThemeColors struct
+
 ## [0.3.4](https://github.com/toniperic/pr-bro/compare/v0.3.3...v0.3.4) - 2026-02-10
 
 ### Fixed
