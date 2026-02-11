@@ -3,6 +3,7 @@ use crate::github::cache::{CacheConfig, DiskCache};
 use crate::github::types::PullRequest;
 use crate::scoring::ScoreResult;
 use crate::snooze::SnoozeState;
+use crate::tui::theme::ThemeColors;
 use crate::version_check::VersionStatus;
 use chrono::{DateTime, Utc};
 use std::collections::VecDeque;
@@ -69,6 +70,7 @@ pub struct App {
     pub auth_username: Option<String>,
     pub version_status: VersionStatus,
     pub no_version_check: bool,
+    pub theme_colors: ThemeColors,
 }
 
 impl App {
@@ -115,6 +117,7 @@ impl App {
             auth_username,
             version_status: VersionStatus::Unknown,
             no_version_check,
+            theme_colors: ThemeColors::dark(),
         }
     }
 
@@ -156,6 +159,7 @@ impl App {
             auth_username,
             version_status: VersionStatus::Unknown,
             no_version_check,
+            theme_colors: ThemeColors::dark(),
         }
     }
 

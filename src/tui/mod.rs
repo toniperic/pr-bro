@@ -4,6 +4,7 @@ pub mod theme;
 pub mod ui;
 
 pub use app::App;
+pub use theme::ThemeColors;
 
 use std::time::Duration;
 
