@@ -34,6 +34,7 @@ cacache = "13"
 http = "1"
 glob = "0.3"
 semver = "1"
+terminal-light = "1.8"
 
 [profile.release]
 opt-level = 3

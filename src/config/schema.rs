@@ -6,6 +6,10 @@ fn default_refresh_interval() -> u64 {
     300
 }
 
+fn default_theme() -> String {
+    "auto".to_string()
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -18,6 +22,10 @@ pub struct Config {
     /// Auto-refresh interval in seconds (defaults to 300 = 5 minutes)
     #[serde(default = "default_refresh_interval")]
     pub auto_refresh_interval: u64,
+
+    /// Theme selection: "dark", "light", or "auto" (detects terminal background)
+    #[serde(default = "default_theme")]
+    pub theme: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

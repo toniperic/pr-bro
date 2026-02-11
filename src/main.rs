@@ -233,6 +233,9 @@ async fn main() {
     // Clean expired snoozes on load
     snooze_state.clean_expired();
 
+    // Resolve theme from config (before TUI mode, as terminal-light reads stdin)
+    let theme = pr_bro::tui::resolve_theme(&config.theme);
+
     // Check if any queries are configured
     if config.queries.is_empty() {
         eprintln!("No queries configured in config file.");
@@ -332,6 +335,7 @@ async fn main() {
             cli.verbose,
             auth_username.clone(),
             cli.no_version_check,
+            theme,
         );
 
         // Launch TUI immediately - it will trigger initial fetch in background

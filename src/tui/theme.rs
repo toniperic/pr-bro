@@ -2,6 +2,12 @@
 
 use ratatui::prelude::*;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Theme {
+    Light,
+    Dark,
+}
+
 /// Complete color palette for the TUI
 #[derive(Debug, Clone)]
 pub struct ThemeColors {
@@ -59,6 +65,14 @@ pub struct ThemeColors {
 }
 
 impl ThemeColors {
+    /// Create a ThemeColors palette for the given theme
+    pub fn new(theme: Theme) -> Self {
+        match theme {
+            Theme::Dark => Self::dark(),
+            Theme::Light => Self::light(),
+        }
+    }
+
     /// Dark theme palette (reproduces original constants exactly)
     pub fn dark() -> Self {
         Self {
@@ -95,6 +109,53 @@ impl ThemeColors {
         }
     }
 
+    /// Light theme palette (optimized for light terminal backgrounds)
+    fn light() -> Self {
+        Self {
+            // Score colors stay the same (traffic light colors work on both)
+            score_high: Color::Red,
+            score_mid: Color::Yellow,
+            score_low: Color::Green,
+            bar_filled_high: Color::Red,
+            bar_filled_mid: Color::Yellow,
+            bar_filled_low: Color::Green,
+            bar_empty: Color::Indexed(250), // Lighter empty bar
+            // Table colors adjusted for light background
+            row_alt_bg: Color::Indexed(254),  // Light gray
+            index_color: Color::Indexed(240), // Medium gray for contrast
+            // Styles stay the same (bold/reversed work universally)
+            title_style: Style::new().bold(),
+            header_style: Style::new().bold(),
+            tab_active: Style::new().reversed(),
+            row_selected: Style::new().reversed(),
+            // General colors adjusted
+            muted: Color::Indexed(244), // Darker muted for readability
+            title_color: Color::Blue,   // Blue instead of cyan
+            // Tab colors adjusted
+            tab_active_style: Style::new().fg(Color::Blue).bold(),
+            tab_inactive_style: Style::new().fg(Color::Indexed(240)),
+            // Status bar adjusted
+            status_bar_bg: Color::Indexed(253), // Light background
+            status_key_color: Color::Blue,
+            // Flash colors stay the same
+            flash_success: Color::Green,
+            flash_error: Color::Red,
+            // Divider adjusted
+            divider_color: Color::Indexed(250), // Lighter divider
+            // Popup adjusted
+            popup_border: Color::Blue,
+            popup_title: Style::new().fg(Color::Blue).bold(),
+            popup_bg: Color::Indexed(255), // Near-white background
+            // Scrollbar adjusted
+            scrollbar_thumb: Color::Indexed(240),
+            scrollbar_track: Color::Indexed(253),
+            // Banner adjusted
+            banner_bg: Color::Rgb(180, 180, 230), // Lighter blue-purple
+            banner_fg: Color::Black,              // Dark text on light banner
+            banner_key: Color::Indexed(88),       // Dark red for highlight
+        }
+    }
+
     /// Returns the appropriate color for a score based on its percentage of max score
     pub fn score_color(&self, score: f64, max_score: f64) -> Color {
         let percentage = if max_score > 0.0 {
@@ -110,5 +171,23 @@ impl ThemeColors {
         } else {
             self.score_low
         }
+    }
+}
+
+/// Resolve theme from config string ("dark", "light", "auto")
+pub fn resolve_theme(config_theme: &str) -> Theme {
+    match config_theme {
+        "light" => Theme::Light,
+        "dark" => Theme::Dark,
+        "auto" => detect_terminal_theme(),
+        _ => Theme::Dark, // Unknown value defaults to dark
+    }
+}
+
+/// Detect terminal theme from background luminance
+fn detect_terminal_theme() -> Theme {
+    match terminal_light::luma() {
+        Ok(luma) if luma > 0.5 => Theme::Light,
+        _ => Theme::Dark, // Detection failed or dark background -> default dark
     }
 }

@@ -7,6 +7,9 @@ Configuration file location: `~/.config/pr-bro/config.yaml`
 ## Full Configuration Example
 
 ```yaml
+# Theme: "auto" (default, detects terminal), "dark", or "light"
+theme: auto
+
 # Auto-refresh interval in seconds (default: 300 = 5 minutes)
 auto_refresh_interval: 300
 
@@ -207,6 +210,18 @@ In this example, the "urgent" query:
 ### YAML Merge Keys
 
 YAML merge keys (`<<:`) are supported by the YAML parser for reducing duplication within your config file. This is a YAML feature processed when reading the file, independent of the runtime merge that combines global and per-query scoring. Note that because PR Bro validates config structure strictly (`deny_unknown_fields`), YAML anchors must be placed inside fields that expect the anchored structure, not at the top level. For advanced YAML anchor/merge-key usage, refer to the [YAML specification](https://yaml.org/type/merge.html).
+
+## Theme
+
+PR Bro supports light and dark color themes. The default is `auto`, which detects your terminal's background color at startup and selects the appropriate palette.
+
+```yaml
+theme: auto    # Detect terminal background (default)
+theme: dark    # Always use dark theme
+theme: light   # Always use light theme
+```
+
+If auto-detection fails (e.g., over SSH or in tmux), it falls back to the dark theme.
 
 ## Config Validation
 
