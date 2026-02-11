@@ -1,5 +1,4 @@
 use crate::tui::app::{App, InputMode, View};
-use crate::tui::theme;
 use crate::version_check::VersionStatus;
 use chrono::{Datelike, Local};
 use ratatui::layout::Margin;
@@ -54,7 +53,7 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
     // Render overlays based on input mode
     match app.input_mode {
         InputMode::SnoozeInput => render_snooze_popup(frame, app),
-        InputMode::Help => render_help_popup(frame),
+        InputMode::Help => render_help_popup(frame, app),
         InputMode::ScoreBreakdown => render_score_breakdown_popup(frame, app),
         InputMode::Normal => {}
     }
@@ -69,7 +68,7 @@ fn render_title(frame: &mut Frame, area: Rect, app: &App) {
     // Build title with rate limit on the right
     let mut spans = vec![Span::styled(
         "PR Bro",
-        Style::default().fg(theme::TITLE_COLOR).bold(),
+        Style::default().fg(app.theme.title_color()).bold(),
     )];
 
     // Add rate limit info on the right if available
@@ -83,7 +82,7 @@ fn render_title(frame: &mut Frame, area: Rect, app: &App) {
         spans.push(Span::raw(" ".repeat(padding_len)));
         spans.push(Span::styled(
             rate_limit_text,
-            Style::default().fg(theme::MUTED),
+            Style::default().fg(app.theme.muted()),
         ));
     }
 
@@ -97,14 +96,14 @@ fn render_update_banner(frame: &mut Frame, area: Rect, app: &App) {
         let banner_text = Line::from(vec![
             Span::styled(
                 format!("  Update available: v{} -> v{}  ", current, latest),
-                Style::default().fg(theme::BANNER_FG),
+                Style::default().fg(app.theme.banner_fg()),
             ),
             Span::raw("["),
-            Span::styled("x", Style::default().fg(theme::BANNER_KEY).bold()),
-            Span::styled(" to dismiss]", Style::default().fg(theme::BANNER_FG)),
+            Span::styled("x", Style::default().fg(app.theme.banner_key()).bold()),
+            Span::styled(" to dismiss]", Style::default().fg(app.theme.banner_fg())),
         ]);
 
-        let banner = Paragraph::new(banner_text).style(Style::default().bg(theme::BANNER_BG));
+        let banner = Paragraph::new(banner_text).style(Style::default().bg(app.theme.banner_bg()));
         frame.render_widget(banner, area);
     }
 }
@@ -118,8 +117,8 @@ fn render_tabs(frame: &mut Frame, area: Rect, app: &App) {
 
     let tabs = Tabs::new(titles)
         .select(selected)
-        .style(Style::default().fg(theme::MUTED))
-        .highlight_style(Style::default().fg(theme::TITLE_COLOR).bold().reversed())
+        .style(Style::default().fg(app.theme.muted()))
+        .highlight_style(Style::default().fg(app.theme.title_color()).bold().reversed())
         .divider(" | ")
         .padding("  ", "  ");
 
@@ -157,10 +156,10 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
                 .map(|(idx, (pr, score_result))| {
                     let index = format!("{}.", idx + 1);
                     let score_str = format_score(score_result.score, score_result.incomplete);
-                    let bar_line = score_bar(score_result.score, max_score, 8);
+                    let bar_line = score_bar(score_result.score, max_score, 8, &app.theme);
 
                     // Build score cell with colored text and bar
-                    let score_color = theme::score_color(score_result.score, max_score);
+                    let score_color = app.theme.score_color(score_result.score, max_score);
                     let mut score_spans = vec![Span::styled(
                         format!("{:>5} ", score_str),
                         Style::default().fg(score_color),
@@ -180,16 +179,16 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
 
                     // Alternating row background (odd rows get subtle background)
                     let row_style = if idx % 2 == 1 {
-                        Style::default().bg(theme::ROW_ALT_BG)
+                        Style::default().bg(app.theme.row_alt_bg())
                     } else {
                         Style::default()
                     };
 
                     Row::new(vec![
-                        Cell::from(index).style(Style::default().fg(theme::INDEX_COLOR)),
+                        Cell::from(index).style(Style::default().fg(app.theme.index_color())),
                         Cell::from(score_line),
                         Cell::from(title),
-                        Cell::from(duration).style(Style::default().fg(theme::MUTED)),
+                        Cell::from(duration).style(Style::default().fg(app.theme.muted())),
                         Cell::from(pr.short_ref()),
                     ])
                     .style(row_style)
@@ -215,10 +214,10 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
                 .map(|(idx, (pr, score_result))| {
                     let index = format!("{}.", idx + 1);
                     let score_str = format_score(score_result.score, score_result.incomplete);
-                    let bar_line = score_bar(score_result.score, max_score, 8);
+                    let bar_line = score_bar(score_result.score, max_score, 8, &app.theme);
 
                     // Build score cell with colored text and bar
-                    let score_color = theme::score_color(score_result.score, max_score);
+                    let score_color = app.theme.score_color(score_result.score, max_score);
                     let mut score_spans = vec![Span::styled(
                         format!("{:>5} ", score_str),
                         Style::default().fg(score_color),
@@ -230,13 +229,13 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
 
                     // Alternating row background (odd rows get subtle background)
                     let row_style = if idx % 2 == 1 {
-                        Style::default().bg(theme::ROW_ALT_BG)
+                        Style::default().bg(app.theme.row_alt_bg())
                     } else {
                         Style::default()
                     };
 
                     Row::new(vec![
-                        Cell::from(index).style(Style::default().fg(theme::INDEX_COLOR)),
+                        Cell::from(index).style(Style::default().fg(app.theme.index_color())),
                         Cell::from(score_line),
                         Cell::from(title),
                         Cell::from(pr.short_ref()),
@@ -260,10 +259,10 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
     let table = Table::new(rows, widths)
         .header(
             Row::new(header_cells)
-                .style(theme::HEADER_STYLE)
+                .style(app.theme.header_style())
                 .bottom_margin(1),
         )
-        .row_highlight_style(theme::ROW_SELECTED);
+        .row_highlight_style(app.theme.row_selected());
 
     frame.render_stateful_widget(table, area, &mut app.table_state);
 
@@ -271,8 +270,8 @@ fn render_table(frame: &mut Frame, area: Rect, app: &mut App) {
     let visible_rows = area.height.saturating_sub(2) as usize; // Subtract header and margin
     if pr_count > visible_rows {
         let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-            .thumb_style(Style::default().fg(theme::SCROLLBAR_THUMB))
-            .track_style(Style::default().fg(theme::SCROLLBAR_TRACK));
+            .thumb_style(Style::default().fg(app.theme.scrollbar_thumb()))
+            .track_style(Style::default().fg(app.theme.scrollbar_track()));
 
         let mut scrollbar_state = ScrollbarState::new(pr_count).position(selected_pos);
 
@@ -285,7 +284,7 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
         // Show flash message with color based on message type
         let msg_color =
             if msg.starts_with("Failed") || msg.starts_with("Error") || msg.contains("cancelled") {
-                theme::FLASH_ERROR
+                app.theme.flash_error()
             } else if msg.starts_with("Snoozed:")
                 || msg.starts_with("Unsnoozed:")
                 || msg.starts_with("Re-snoozed:")
@@ -293,7 +292,7 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
                 || msg.starts_with("Refreshed")
                 || msg.starts_with("Opened:")
             {
-                theme::FLASH_SUCCESS
+                app.theme.flash_success()
             } else {
                 Color::White // Default for unknown message types
             };
@@ -347,24 +346,24 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
             }
             hint_spans.push(Span::styled(
                 *key1,
-                Style::default().fg(theme::STATUS_KEY_COLOR),
+                Style::default().fg(app.theme.status_key_color()),
             ));
             if !sep.is_empty() {
                 hint_spans.push(Span::raw(*sep));
                 hint_spans.push(Span::styled(
                     *key2,
-                    Style::default().fg(theme::STATUS_KEY_COLOR),
+                    Style::default().fg(app.theme.status_key_color()),
                 ));
             }
             hint_spans.push(Span::raw(*label));
         }
 
         let mut spans = vec![
-            Span::styled(count, Style::default().fg(theme::MUTED)),
+            Span::styled(count, Style::default().fg(app.theme.muted())),
             Span::raw(" "),
-            Span::styled(view_mode, Style::default().fg(theme::MUTED)),
+            Span::styled(view_mode, Style::default().fg(app.theme.muted())),
             Span::raw(" "),
-            Span::styled(refresh_time, Style::default().fg(theme::MUTED)),
+            Span::styled(refresh_time, Style::default().fg(app.theme.muted())),
             Span::raw("  "),
         ];
         spans.extend(hint_spans);
@@ -372,7 +371,7 @@ fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
     };
 
     frame.render_widget(
-        Paragraph::new(text).style(Style::default().bg(theme::STATUS_BAR_BG)),
+        Paragraph::new(text).style(Style::default().bg(app.theme.status_bar_bg())),
         area,
     );
 }
@@ -396,7 +395,7 @@ fn format_score(score: f64, incomplete: bool) -> String {
     }
 }
 
-fn score_bar(score: f64, max_score: f64, width: usize) -> Line<'static> {
+fn score_bar(score: f64, max_score: f64, width: usize, theme: &crate::tui::theme::Theme) -> Line<'static> {
     let ratio = if max_score > 0.0 {
         (score / max_score).min(1.0)
     } else {
@@ -406,7 +405,7 @@ fn score_bar(score: f64, max_score: f64, width: usize) -> Line<'static> {
     let empty = width.saturating_sub(filled);
 
     // Get color based on score
-    let bar_color = theme::score_color(score, max_score);
+    let bar_color = theme.score_color(score, max_score);
 
     let mut spans = Vec::new();
     if filled > 0 {
@@ -418,7 +417,7 @@ fn score_bar(score: f64, max_score: f64, width: usize) -> Line<'static> {
     if empty > 0 {
         spans.push(Span::styled(
             "░".repeat(empty),
-            Style::default().fg(theme::BAR_EMPTY),
+            Style::default().fg(theme.bar_empty()),
         ));
     }
 
@@ -435,9 +434,9 @@ fn render_snooze_popup(frame: &mut Frame, app: &App) {
     // Render the popup border with accent color
     let block = Block::bordered()
         .title("Snooze Duration")
-        .border_style(Style::default().fg(theme::POPUP_BORDER))
-        .title_style(theme::POPUP_TITLE)
-        .style(Style::default().bg(theme::POPUP_BG));
+        .border_style(Style::default().fg(app.theme.popup_border()))
+        .title_style(app.theme.popup_title())
+        .style(Style::default().bg(app.theme.popup_bg()));
     frame.render_widget(block.clone(), popup_area);
 
     // Get inner area (inside the border)
@@ -474,13 +473,13 @@ fn render_snooze_popup(frame: &mut Frame, app: &App) {
     };
 
     let preview_color = match &parse_result {
-        None => theme::MUTED,
+        None => app.theme.muted(),
         Some(Ok(_)) => Color::Green,
         Some(Err(_)) => Color::Red,
     };
 
     let preview = Paragraph::new(Line::from(vec![
-        Span::styled("Duration: ", Style::default().fg(theme::MUTED)),
+        Span::styled("Duration: ", Style::default().fg(app.theme.muted())),
         Span::styled(preview_text, Style::default().fg(preview_color)),
     ]));
     frame.render_widget(preview, chunks[1]);
@@ -513,12 +512,12 @@ fn render_snooze_popup(frame: &mut Frame, app: &App) {
         }
         Some(Err(_)) => String::new(),
     };
-    let end_time = Paragraph::new(end_time_text).style(Style::default().fg(theme::MUTED));
+    let end_time = Paragraph::new(end_time_text).style(Style::default().fg(app.theme.muted()));
     frame.render_widget(end_time, chunks[2]);
 
     // Render help text
     let help =
-        Paragraph::new("Enter: confirm | Esc: cancel").style(Style::default().fg(theme::MUTED));
+        Paragraph::new("Enter: confirm | Esc: cancel").style(Style::default().fg(app.theme.muted()));
     frame.render_widget(help, chunks[3]);
 }
 
@@ -541,7 +540,7 @@ fn centered_rect_fixed(width: u16, height: u16, area: Rect) -> Rect {
 }
 
 /// Render the help overlay popup
-fn render_help_popup(frame: &mut Frame) {
+fn render_help_popup(frame: &mut Frame, app: &App) {
     let popup_area = centered_rect_fixed(50, 17, frame.area());
 
     // Clear the background
@@ -550,9 +549,9 @@ fn render_help_popup(frame: &mut Frame) {
     // Render the popup border with accent color
     let block = Block::bordered()
         .title(" Keyboard Shortcuts ")
-        .border_style(Style::default().fg(theme::POPUP_BORDER))
-        .title_style(theme::POPUP_TITLE)
-        .style(Style::default().bg(theme::POPUP_BG));
+        .border_style(Style::default().fg(app.theme.popup_border()))
+        .title_style(app.theme.popup_title())
+        .style(Style::default().bg(app.theme.popup_bg()));
     frame.render_widget(block.clone(), popup_area);
 
     // Get inner area (inside the border)
@@ -607,7 +606,7 @@ fn render_help_popup(frame: &mut Frame) {
         Line::from(""),
         Line::from(Span::styled(
             "Press any key to close",
-            Style::default().fg(theme::MUTED),
+            Style::default().fg(app.theme.muted()),
         )),
     ];
 
@@ -624,8 +623,8 @@ fn render_loading_overlay(frame: &mut Frame, app: &App) {
 
     // Render the popup border with accent color
     let block = Block::bordered()
-        .border_style(Style::default().fg(theme::POPUP_BORDER))
-        .style(Style::default().bg(theme::POPUP_BG));
+        .border_style(Style::default().fg(app.theme.popup_border()))
+        .style(Style::default().bg(app.theme.popup_bg()));
     frame.render_widget(block.clone(), popup_area);
 
     // Get inner area (inside the border)
@@ -674,9 +673,9 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
     // Render the popup border with accent color
     let block = Block::bordered()
         .title(" Score Breakdown ")
-        .border_style(Style::default().fg(theme::POPUP_BORDER))
-        .title_style(theme::POPUP_TITLE)
-        .style(Style::default().bg(theme::POPUP_BG));
+        .border_style(Style::default().fg(app.theme.popup_border()))
+        .title_style(app.theme.popup_title())
+        .style(Style::default().bg(app.theme.popup_bg()));
     frame.render_widget(block.clone(), popup_area);
 
     // Get inner area (inside the border)
@@ -692,7 +691,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
     // Line 1: PR reference in muted text
     lines.push(Line::from(Span::styled(
         pr.short_ref(),
-        Style::default().fg(theme::MUTED),
+        Style::default().fg(app.theme.muted()),
     )));
 
     // Line 2: PR title (truncate if needed)
@@ -721,7 +720,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
         lines.push(Line::from(""));
         lines.push(Line::from(Span::styled(
             "No scoring factors configured",
-            Style::default().fg(theme::MUTED),
+            Style::default().fg(app.theme.muted()),
         )));
     } else {
         for factor in &breakdown.factors {
@@ -742,7 +741,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
                 ),
                 Span::styled(
                     format!("{:.1}", factor.before),
-                    Style::default().fg(theme::MUTED),
+                    Style::default().fg(app.theme.muted()),
                 ),
                 Span::raw(" -> "),
                 Span::styled(
@@ -754,7 +753,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
             // Line 2: indented description
             lines.push(Line::from(Span::styled(
                 format!("  {}", factor.description),
-                Style::default().fg(theme::MUTED),
+                Style::default().fg(app.theme.muted()),
             )));
         }
     }
@@ -768,7 +767,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
         .iter()
         .map(|(_, sr)| sr.score)
         .fold(0.0_f64, f64::max);
-    let score_color = theme::score_color(score_result.score, max_score);
+    let score_color = app.theme.score_color(score_result.score, max_score);
 
     lines.push(Line::from(vec![
         Span::raw("Final score: "),
@@ -781,7 +780,7 @@ fn render_score_breakdown_popup(frame: &mut Frame, app: &App) {
     // Line N: Help text
     lines.push(Line::from(Span::styled(
         "Esc or d to close",
-        Style::default().fg(theme::MUTED),
+        Style::default().fg(app.theme.muted()),
     )));
 
     let paragraph = Paragraph::new(lines);

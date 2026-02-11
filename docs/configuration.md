@@ -10,6 +10,10 @@ Configuration file location: `~/.config/pr-bro/config.yaml`
 # Auto-refresh interval in seconds (default: 300 = 5 minutes)
 auto_refresh_interval: 300
 
+# TUI theme (default: dark)
+# Options: dark, light
+theme: dark
+
 # Global scoring configuration (applies to all queries unless overridden)
 scoring:
   base_score: 100
@@ -44,6 +48,25 @@ queries:
       age: "x1.5 per 1d"  # Gets a x1.5 boost per day of age
       approvals: "+5 per 1"
 ```
+
+## Theme
+
+Optional. Controls the color scheme of the TUI interface.
+
+**Options:**
+- `dark` (default) — Dark theme optimized for terminals with dark backgrounds
+- `light` — Light theme optimized for terminals with light backgrounds
+
+Example:
+
+```yaml
+theme: light
+```
+
+The light theme adjusts colors for better readability on light terminal backgrounds:
+- Darker text colors for better contrast
+- Lighter backgrounds for UI elements
+- Adjusted accent colors for better visibility
 
 ## Scoring Factors
 

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::scoring::ScoringConfig;
+use crate::tui::theme::ThemeVariant;
 
 fn default_refresh_interval() -> u64 {
     300
@@ -18,6 +19,10 @@ pub struct Config {
     /// Auto-refresh interval in seconds (defaults to 300 = 5 minutes)
     #[serde(default = "default_refresh_interval")]
     pub auto_refresh_interval: u64,
+
+    /// TUI theme (dark or light, defaults to dark)
+    #[serde(default)]
+    pub theme: ThemeVariant,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
