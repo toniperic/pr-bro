@@ -25,7 +25,7 @@ scoring:
         effect: "x10"     # Extremely small PRs get a huge boost
       - range: "10-99"
         effect: "x5"      # Small PRS get a decent boost
-      - range: "100-250"
+      - range: "100-249"
         effect: "x1"      # Medium PRs: no change
       - range: "250-499"
         effect: "x0.5"    # Large PRs get a decent penalty
