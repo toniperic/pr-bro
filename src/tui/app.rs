@@ -72,6 +72,7 @@ pub struct App {
     pub no_version_check: bool,
     pub theme: Theme,
     pub theme_colors: ThemeColors,
+    pub last_interaction: Instant,
 }
 
 impl App {
@@ -121,6 +122,7 @@ impl App {
             no_version_check,
             theme,
             theme_colors: ThemeColors::new(theme),
+            last_interaction: Instant::now(),
         }
     }
 
@@ -165,6 +167,7 @@ impl App {
             no_version_check,
             theme,
             theme_colors: ThemeColors::new(theme),
+            last_interaction: Instant::now(),
         }
     }
 

@@ -77,7 +77,10 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
 
         // Handle events
         match events.next().await {
-            Event::Key(key) => handle_key_event(&mut app, key),
+            Event::Key(key) => {
+                app.last_interaction = std::time::Instant::now();
+                handle_key_event(&mut app, key);
+            }
             Event::Tick => {
                 app.update_flash();
                 app.advance_spinner();
@@ -176,39 +179,48 @@ pub async fn run_tui(mut app: App, mut client: octocrab::Octocrab) -> anyhow::Re
 
         // Spawn new refresh if needed and no fetch is pending
         if app.needs_refresh && pending_fetch.is_none() {
-            app.needs_refresh = false;
+            // Check if this is a manual refresh (force_refresh) or auto-refresh
+            let is_manual = app.force_refresh;
+            let modal_open = app.input_mode != app::InputMode::Normal;
+            let recent_interaction = app.last_interaction.elapsed() < Duration::from_secs(10);
 
-            // If force_refresh is true, clear in-memory cache before fetching
-            if app.force_refresh {
-                if let Some(cache) = &app.cache_handle {
-                    cache.clear_memory();
+            // Suppress auto-refresh if modal is open or user interacted recently.
+            // Manual refresh ('r' key) always proceeds.
+            // When suppressed, needs_refresh stays true so it retries on the next tick.
+            if is_manual || (!modal_open && !recent_interaction) {
+                app.needs_refresh = false;
+
+                if is_manual {
+                    if let Some(cache) = &app.cache_handle {
+                        cache.clear_memory();
+                    }
+                    app.force_refresh = false;
                 }
-                app.force_refresh = false;
+
+                // Spawn background fetch
+                let client_clone = client.clone();
+                let config_clone = app.config.clone();
+                let snooze_clone = app.snooze_state.clone();
+                let cache_config_clone = app.cache_config.clone();
+                let verbose = app.verbose;
+                let auth_username_clone = app.auth_username.clone();
+
+                pending_fetch = Some(tokio::spawn(async move {
+                    tokio::time::timeout(
+                        Duration::from_secs(20),
+                        crate::fetch::fetch_and_score_prs(
+                            &client_clone,
+                            &config_clone,
+                            &snooze_clone,
+                            &cache_config_clone,
+                            verbose,
+                            auth_username_clone.as_deref(),
+                        ),
+                    )
+                    .await
+                }));
+                app.is_loading = true;
             }
-
-            // Spawn background fetch
-            let client_clone = client.clone();
-            let config_clone = app.config.clone();
-            let snooze_clone = app.snooze_state.clone();
-            let cache_config_clone = app.cache_config.clone();
-            let verbose = app.verbose;
-            let auth_username_clone = app.auth_username.clone();
-
-            pending_fetch = Some(tokio::spawn(async move {
-                tokio::time::timeout(
-                    Duration::from_secs(20),
-                    crate::fetch::fetch_and_score_prs(
-                        &client_clone,
-                        &config_clone,
-                        &snooze_clone,
-                        &cache_config_clone,
-                        verbose,
-                        auth_username_clone.as_deref(),
-                    ),
-                )
-                .await
-            }));
-            app.is_loading = true;
         }
 
         if app.should_quit {
