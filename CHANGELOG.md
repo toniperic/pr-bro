@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/toniperic/pr-bro/compare/v0.4.0...v0.4.1) - 2026-02-20
+
+### Fixed
+
+- suppress auto-refresh during TUI interaction
+
+### Other
+
+- *(deps)* bump clap from 4.5.59 to 4.5.60
+- *(deps)* bump anyhow from 1.0.101 to 1.0.102
+- fix overlapping size bucket range in config example
+- *(deps)* bump clap from 4.5.58 to 4.5.59
+- *(deps)* bump serde-saphyr from 0.0.18 to 0.0.19
+- *(deps)* bump futures from 0.3.31 to 0.3.32
+- *(deps)* bump clap from 4.5.57 to 4.5.58
+- remove refactor commits from release-plz triggers
+- replace hardcoded help text padding with programmatic alignment
+
 ## [0.4.0](https://github.com/toniperic/pr-bro/compare/v0.3.4...v0.4.0) - 2026-02-11
 
 ### Added
