@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2](https://github.com/toniperic/pr-bro/compare/v0.4.1...v0.4.2) - 2026-03-05
+
+### Fixed
+
+- *(deps)* bump aws-lc-sys from 0.37.0 to 0.38.0
+
+### Other
+
+- *(deps)* bump tokio from 1.49.0 to 1.50.0
+- *(deps)* bump serde-saphyr from 0.0.20 to 0.0.21
+- *(deps)* bump actions/download-artifact from 7 to 8
+- *(deps)* bump actions/upload-artifact from 6 to 7
+- *(deps)* bump rustls from 0.23.36 to 0.23.37
+- *(deps)* bump chrono from 0.4.43 to 0.4.44
+- *(deps)* bump serde-saphyr from 0.0.19 to 0.0.20
+
 ## [0.4.1](https://github.com/toniperic/pr-bro/compare/v0.4.0...v0.4.1) - 2026-02-20
 
 ### Fixed
