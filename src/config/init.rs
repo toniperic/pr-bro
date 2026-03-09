@@ -211,8 +211,8 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
 
         // Draft
         println!();
-        typewriter("Draft PRs aren't ready for review yet. You can deprioritize them.");
-        typewriter("Use 'x0.1' to heavily deprioritize, or 'x0.5' for a lighter penalty.");
+        typewriter("If you value drafts differently compared to pull requests, you can (de)prioritize them.");
+        typewriter("For example, use 'x0.1' to heavily deprioritize, 'x0.5' for a lighter penalty or 'x1.5' if you want to give them a boost.");
         typewriter("Use 'none' to skip this factor entirely.");
         let draft = loop {
             let input = prompt_with_default("Draft factor (e.g., x0.1 to deprioritize)", "none")?;
