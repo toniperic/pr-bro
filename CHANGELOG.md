@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/toniperic/pr-bro/compare/v0.4.2...v0.5.0) - 2026-03-10
+
+### Added
+
+- add draft PR scoring factor ([#96](https://github.com/toniperic/pr-bro/pull/96))
+
+### Other
+
+- *(deps)* bump webbrowser from 1.1.0 to 1.2.0
+
 ## [0.4.2](https://github.com/toniperic/pr-bro/compare/v0.4.1...v0.4.2) - 2026-03-05
 
 ### Fixed

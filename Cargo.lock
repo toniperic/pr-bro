@@ -2533,7 +2533,7 @@ dependencies = [
 
 [[package]]
 name = "pr-bro"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "atomic-write-file",
