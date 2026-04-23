@@ -179,11 +179,7 @@ fn calculate_units(effect: &Effect, age: chrono::Duration) -> u64 {
     if let Some(unit_duration) = effect.unit_duration() {
         let age_secs = age.num_seconds().max(0) as u64;
         let unit_secs = unit_duration.as_secs();
-        if unit_secs > 0 {
-            age_secs / unit_secs
-        } else {
-            0
-        }
+        age_secs.checked_div(unit_secs).unwrap_or(0)
     } else {
         1 // Non-per-unit effects apply once
     }
