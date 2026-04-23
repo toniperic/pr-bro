@@ -291,10 +291,8 @@ fn handle_key_event(app: &mut App, key: KeyEvent) {
                 KeyCode::Char('b') => app.show_score_breakdown(),
 
                 // Dismiss update banner
-                KeyCode::Char('x') => {
-                    if app.has_update_banner() {
-                        app.dismiss_update_banner();
-                    }
+                KeyCode::Char('x') if app.has_update_banner() => {
+                    app.dismiss_update_banner();
                 }
 
                 _ => {}
