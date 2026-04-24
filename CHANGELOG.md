@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1](https://github.com/toniperic/pr-bro/compare/v0.5.0...v0.5.1) - 2026-04-24
+
+### Fixed
+
+- resolve clippy lints from Rust 1.95
+
+### Other
+
+- *(deps)* bump rand from 0.8.5 to 0.8.6
+- *(deps)* bump clap from 4.6.0 to 4.6.1
+- *(deps)* bump webbrowser from 1.2.0 to 1.2.1
+- *(deps)* bump rustls-webpki from 0.103.10 to 0.103.13
+- *(deps)* bump serde-saphyr from 0.0.23 to 0.0.24
+- *(deps)* bump tokio-retry from 0.3.0 to 0.3.1
+- *(deps)* bump tokio from 1.52.0 to 1.52.1
+- *(deps)* bump tokio from 1.51.1 to 1.52.0
+- *(deps)* bump rustls from 0.23.37 to 0.23.38
+- *(deps)* bump softprops/action-gh-release from 2 to 3
+- *(deps)* bump actions/github-script from 8 to 9
+- *(deps)* bump aws-lc-sys from 0.38.0 to 0.39.1
+- *(deps)* bump semver from 1.0.27 to 1.0.28
+- *(deps)* bump tokio from 1.51.0 to 1.51.1
+- *(deps)* bump tokio from 1.50.0 to 1.51.0
+- *(deps)* bump serde-saphyr from 0.0.22 to 0.0.23
+- *(deps)* bump octocrab from 0.49.6 to 0.49.7
+- *(deps)* bump rustls-webpki from 0.103.9 to 0.103.10
+- *(deps)* bump terminal_size from 0.4.3 to 0.4.4
+- *(deps)* bump octocrab from 0.49.5 to 0.49.6
+- *(deps)* bump serde-saphyr from 0.0.21 to 0.0.22
+- *(deps)* bump clap from 4.5.60 to 4.6.0
+
 ## [0.5.0](https://github.com/toniperic/pr-bro/compare/v0.4.2...v0.5.0) - 2026-03-10
 
 ### Added
