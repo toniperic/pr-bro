@@ -9,7 +9,7 @@ keywords = ["github", "pull-request", "code-review", "tui", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
-octocrab = "0.53"
+octocrab = "0.54"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.13", features = ["json"] }
 rustls = { version = "0.23", features = ["ring"] }
