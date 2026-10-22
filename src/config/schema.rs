@@ -10,6 +10,10 @@ fn default_theme() -> String {
     "auto".to_string()
 }
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -26,6 +30,10 @@ pub struct Config {
     /// Theme selection: "dark", "light", or "auto" (detects terminal background)
     #[serde(default = "default_theme")]
     pub theme: String,
+
+    /// Notify when new PRs show up in the active list
+    #[serde(default)]
+    pub notifications: NotificationConfig,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -37,4 +45,37 @@ pub struct QueryConfig {
     /// Per-query scoring configuration (merges with global scoring — set fields override, unset fields inherit from global)
     #[serde(default)]
     pub scoring: Option<ScoringConfig>,
+}
+
+/// Notification settings for new PRs appearing in the active list
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct NotificationConfig {
+    /// Master switch (defaults to false — opt in)
+    #[serde(default)]
+    pub enabled: bool,
+
+    /// Ring the terminal bell
+    #[serde(default = "default_true")]
+    pub sound: bool,
+
+    /// Show a native desktop notification
+    #[serde(default = "default_true")]
+    pub desktop: bool,
+
+    /// Shell command to run instead of `sound`/`desktop`.
+    /// `{count}` is replaced with the number of new PRs.
+    #[serde(default)]
+    pub command: Option<String>,
+}
+
+impl Default for NotificationConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            sound: true,
+            desktop: true,
+            command: None,
+        }
+    }
 }
