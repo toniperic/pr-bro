@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
-use crate::config::{get_config_path, Config, QueryConfig};
+use crate::config::{get_config_path, Config, NotificationConfig, QueryConfig};
 use crate::scoring::{Effect, LabelEffect, RangeOp, ScoringConfig, SizeBucket, SizeConfig};
 
 /// Prompt user with a message and return their trimmed input.
@@ -319,7 +319,14 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         println!();
     }
 
-    // 4. Config path
+    // 4. Notifications
+    println!();
+    let notifications_enabled = prompt_yes_no(
+        "Notify you when new PRs appear while PR Bro is open?",
+        false,
+    )?;
+
+    // 5. Config path
     let default_config_path = default_path.unwrap_or_else(get_config_path);
     println!();
     let path_str = prompt_with_default(
@@ -343,12 +350,16 @@ pub fn run_init_wizard(default_path: Option<PathBuf>) -> Result<()> {
         }
     }
 
-    // 5. Write config
+    // 6. Write config
     let config = Config {
         scoring: Some(scoring),
         queries,
         auto_refresh_interval: 300,
         theme: "auto".to_string(),
+        notifications: NotificationConfig {
+            enabled: notifications_enabled,
+            ..Default::default()
+        },
     };
 
     let yaml = serde_saphyr::to_string(&config)
