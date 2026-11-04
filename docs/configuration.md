@@ -13,6 +13,10 @@ theme: auto
 # Auto-refresh interval in seconds (default: 300 = 5 minutes)
 auto_refresh_interval: 300
 
+# Notify when new PRs show up in the list (default: disabled)
+notifications:
+  enabled: true
+
 # Global scoring configuration (applies to all queries unless overridden)
 scoring:
   base_score: 100
@@ -231,6 +235,66 @@ theme: light   # Always use light theme
 ```
 
 If auto-detection fails (e.g., over SSH or in tmux), it falls back to the dark theme.
+
+## Notifications
+
+PR Bro can alert you when a PR appears in your active list that wasn't there on the previous refresh. This is useful when PR Bro is running in a background terminal tab while you work on something else.
+
+```yaml
+notifications:
+  enabled: true     # Master switch (default: false)
+  sound: true       # Ring the terminal bell (default: true)
+  desktop: true     # Show a native desktop notification (default: true)
+  command: null     # Optional shell command, overrides sound and desktop
+```
+
+One notification is sent per refresh, regardless of how many PRs arrived — you get "3 PRs need your review", not three separate alerts.
+
+### What counts as new
+
+The comparison is against the active list from the previous refresh, held in memory. Consequences worth knowing:
+
+- **Startup is silent.** The first fetch of a session has nothing to compare against, so PRs already waiting for you do not trigger an alert. Only PRs that arrive while PR Bro is open do.
+- **Expiring snoozes count as new.** A PR that returns to the active list because its snooze ran out is treated as an arrival.
+- **PRs disappearing is not an event.** Merged, closed, or snoozed PRs leaving the list never notify.
+
+### Terminal bell
+
+`sound` writes an ASCII BEL (`\x07`) to the terminal. Many emulators ship with the audible bell muted or set to a visual flash — iTerm2, Ghostty, and Terminal.app all do this in some configurations. If `enabled: true` produces no sound, check your terminal's bell settings.
+
+### Custom command
+
+When `command` is set it replaces both `sound` and `desktop`. The string is run through `sh -c`, with `{count}` substituted for the number of new PRs:
+
+On macOS, this gives you both the sound and the notification:
+
+```yaml
+notifications:
+  enabled: true
+  command: >-
+    osascript -e 'display notification "{count} PRs need your review"
+    with title "PR Bro" sound name "Glass"'
+```
+
+Substitute any sound name from `/System/Library/Sounds`; an unrecognized name falls back to the default alert sound rather than erroring.
+
+For a beep only, without a notification:
+
+```yaml
+notifications:
+  enabled: true
+  command: "osascript -e 'beep'"
+```
+
+On Linux:
+
+```yaml
+notifications:
+  enabled: true
+  command: 'notify-send "PR Bro" "{count} PRs need your review"'
+```
+
+The command is spawned without waiting for it to finish, so a slow command will not stall the refresh. Failures are reported after you exit the TUI rather than interrupting the display.
 
 ## Config Validation
 

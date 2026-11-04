@@ -3,6 +3,7 @@ pub mod config;
 pub mod credentials;
 pub mod fetch;
 pub mod github;
+pub mod notify;
 pub mod output;
 pub mod scoring;
 pub mod snooze;
