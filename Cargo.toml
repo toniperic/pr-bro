@@ -7,6 +7,7 @@ license = "MIT"
 repository = "https://github.com/toniperic/pr-bro"
 keywords = ["github", "pull-request", "code-review", "tui", "cli"]
 categories = ["command-line-utilities", "development-tools"]
+exclude = ["docs/demo.gif"]
 
 [dependencies]
 octocrab = "0.54"
