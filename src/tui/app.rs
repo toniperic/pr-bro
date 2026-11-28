@@ -6,7 +6,7 @@ use crate::snooze::SnoozeState;
 use crate::tui::theme::{Theme, ThemeColors};
 use crate::version_check::VersionStatus;
 use chrono::{DateTime, Utc};
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
@@ -73,6 +73,7 @@ pub struct App {
     pub theme: Theme,
     pub theme_colors: ThemeColors,
     pub last_interaction: Instant,
+    previous_active_urls: Option<HashSet<String>>,
 }
 
 impl App {
@@ -94,6 +95,9 @@ impl App {
         if !active_prs.is_empty() {
             table_state.select(Some(0));
         }
+
+        let previous_active_urls: Option<HashSet<String>> =
+            Some(active_prs.iter().map(|(pr, _)| pr.url.clone()).collect());
 
         Self {
             active_prs,
@@ -123,6 +127,7 @@ impl App {
             theme,
             theme_colors: ThemeColors::new(theme),
             last_interaction: Instant::now(),
+            previous_active_urls,
         }
     }
 
@@ -168,6 +173,7 @@ impl App {
             theme,
             theme_colors: ThemeColors::new(theme),
             last_interaction: Instant::now(),
+            previous_active_urls: None,
         }
     }
 
@@ -547,6 +553,16 @@ impl App {
         snoozed: Vec<(PullRequest, ScoreResult)>,
         rate_limit_remaining: Option<u64>,
     ) {
+        // Notify about PRs that were not in the previous active list.
+        // Skipped entirely on the first fetch of the session, which would
+        // otherwise announce every PR already waiting for us.
+        if let Some(previous) = &self.previous_active_urls {
+            let new_count =
+                crate::notify::count_new(previous, active.iter().map(|(pr, _)| pr.url.as_str()));
+            crate::notify::notify(&self.config.notifications, new_count);
+        }
+        self.previous_active_urls = Some(active.iter().map(|(pr, _)| pr.url.clone()).collect());
+
         // Replace PR lists
         self.active_prs = active;
         self.snoozed_prs = snoozed;

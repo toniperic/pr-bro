@@ -2,7 +2,7 @@ mod init;
 mod schema;
 
 pub use init::run_init_wizard;
-pub use schema::{Config, QueryConfig};
+pub use schema::{Config, NotificationConfig, QueryConfig};
 
 use anyhow::{Context, Result};
 use std::fs;

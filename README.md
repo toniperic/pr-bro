@@ -71,6 +71,8 @@ Use `pr-bro --help` for all command-line options. Press `?` in the TUI for keybo
 
 **Score breakdown** shows exactly how a PR's score was calculated. See which factors contributed most. Press `b` on any PR to open the detail view.
 
+**Notifications** alert you when a PR appears that wasn't in the list on the previous refresh, so you can leave PR Bro running in a background tab. One bell or desktop notification per refresh, not one per PR. Opt in with `notifications.enabled` and see the [Configuration Reference](docs/configuration.md#notifications).
+
 **Light and dark themes** adapt to your terminal. PR Bro auto-detects your terminal background and picks the right color palette.
 
 **ETag-based HTTP caching** reduces GitHub API calls. Auto-refresh only fetches if data changed on the server. Manual refresh bypasses in-memory cache.
